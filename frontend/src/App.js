@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import AuthCallback from './components/AuthCallback';
+import LandingPage from './components/landing/LandingPage';
 import './App.css';
 
 function App() {
@@ -27,24 +28,45 @@ function App() {
       <div className="App">
         <Routes>
           <Route 
+            path="/" 
+            element={<LandingPage token={token} />} 
+          />
+          <Route 
             path="/login" 
-            element={!token ? <Login setToken={setToken} /> : <Navigate to="/dashboard" />} 
+            element={!token ? (
+              <div className="auth-page-container">
+                <Login setToken={setToken} />
+              </div>
+            ) : <Navigate to="/dashboard" />} 
           />
           <Route 
             path="/signup" 
-            element={!token ? <Signup setToken={setToken} /> : <Navigate to="/dashboard" />} 
+            element={!token ? (
+              <div className="auth-page-container">
+                <Signup setToken={setToken} />
+              </div>
+            ) : <Navigate to="/dashboard" />} 
           />
           <Route 
             path="/callback" 
-            element={<AuthCallback setToken={setToken} />} 
+            element={
+              <div className="auth-page-container">
+                <AuthCallback setToken={setToken} />
+              </div>
+            } 
           />
           <Route 
             path="/dashboard" 
-            element={token ? <Dashboard token={token} onLogout={handleLogout} /> : <Navigate to="/login" />} 
+            element={token ? (
+              <div className="dashboard-page-container">
+                <Dashboard token={token} onLogout={handleLogout} />
+              </div>
+            ) : <Navigate to="/login" />} 
           />
+          {/* Fallback to landing */}
           <Route 
-            path="/" 
-            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
+            path="*" 
+            element={<Navigate to="/" />} 
           />
         </Routes>
       </div>

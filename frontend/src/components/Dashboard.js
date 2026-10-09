@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../api';
 import BMICalculator from './calculators/BMICalculator';
 import AgeCalculator from './calculators/AgeCalculator';
@@ -40,8 +41,13 @@ function Dashboard({ token, onLogout }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Calculator Dashboard</h1>
+        <div>
+          <h1>Calculator Dashboard</h1>
+        </div>
         <div className="user-info">
+          <Link to="/" className="home-link-btn" title="View landing page">
+            ← Suite Overview
+          </Link>
           {user && <span>Welcome, {user.username}!</span>}
           <button className="logout-btn" onClick={onLogout}>
             Logout

@@ -1,18 +1,51 @@
 .App {
   min-height: 100vh;
+  width: 100%;
+}
+
+.auth-page-container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+}
+
+.dashboard-page-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 24px;
+  background: #F8F9FF;
+}
+
+.home-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f1f4fd;
+  color: #4F46E5;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.home-link-btn:hover {
+  background: #ede9fe;
+  color: #7C3AED;
 }
 
 .auth-container {
   background: white;
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 .auth-container h2 {
