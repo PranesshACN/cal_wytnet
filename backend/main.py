@@ -39,13 +39,24 @@ if DATABASE_URL == "sqlite:///./calculator.db":
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Ensure IPv4 connection pooler is used for Supabase to prevent IPv6 DNS failures
+if "db.ekaileporclbujbfxfos.supabase.co" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres:Pranessh123@db.ekaileporclbujbfxfos.supabase.co:5432",
+        "postgres.ekaileporclbujbfxfos:Pranessh123@aws-0-ap-northeast-2.pooler.supabase.com:5432"
+    )
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kalzy.vercel.app")
 IS_PROD = ENVIRONMENT.lower() == "production"
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
-)
+engine_kwargs = {}
+if "sqlite" in DATABASE_URL:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_recycle"] = 300
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
