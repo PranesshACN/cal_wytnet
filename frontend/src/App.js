@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import AuthCallback from './components/AuthCallback';
 import LandingPage from './components/landing/LandingPage';
+import { logout } from './api';
 import './App.css';
 
 function App() {
@@ -18,9 +21,9 @@ function App() {
     }
   }, [token]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout();
     setToken(null);
-    localStorage.removeItem('token');
   };
 
   return (
@@ -46,6 +49,31 @@ function App() {
                 <Signup setToken={setToken} />
               </div>
             ) : <Navigate to="/dashboard" />} 
+          />
+          <Route 
+            path="/forgot-password" 
+            element={!token ? (
+              <div className="auth-page-container">
+                <ForgotPassword />
+              </div>
+            ) : <Navigate to="/dashboard" />} 
+          />
+          <Route 
+            path="/reset-password" 
+            element={!token ? (
+              <div className="auth-page-container">
+                <ResetPassword />
+              </div>
+            ) : <Navigate to="/dashboard" />} 
+          />
+          {/* WytPass OIDC Redirect URI callbacks */}
+          <Route 
+            path="/api/auth/callback/whitenet" 
+            element={
+              <div className="auth-page-container">
+                <AuthCallback setToken={setToken} />
+              </div>
+            } 
           />
           <Route 
             path="/callback" 

@@ -1,0 +1,790 @@
+/* ==========================================================================
+   Dashboard Workspace CSS - High Fidelity Matching User Spec
+   ========================================================================== */
+
+.dashboard-root {
+  min-height: 100vh;
+  background: #F4F6FC;
+  padding: 24px 28px 48px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #0F172A;
+}
+
+/* Dashboard Top Navigation Bar */
+.dashboard-nav-card {
+  width: 100%;
+  max-width: 1180px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+.dashboard-brand-col {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+.brand-sparkle {
+  color: #6366F1;
+  font-size: 16px;
+}
+
+.brand-suite-tag {
+  color: #6366F1;
+}
+
+.identity-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wytnet-secure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  border: 1px solid #C7D2FE;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sub-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #F8FAFC;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.dashboard-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 5px 12px;
+  border-radius: 12px;
+}
+
+.user-avatar-circle {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.user-text-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name-bold {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+}
+
+.user-email-dim {
+  font-size: 11px;
+  color: #64748B;
+}
+
+.nav-overview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #F1F5F9;
+  color: #475569;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.nav-overview-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.nav-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nav-logout-btn:hover {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+/* ==========================================================================
+   Main Workspace Card (Matches Attached Image Perfectly)
+   ========================================================================== */
+.workspace-wrapper-card {
+  width: 100%;
+  max-width: 1180px;
+  background: #FFFFFF;
+  border: 1px solid #E8E5F5;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px -10px rgba(79, 70, 229, 0.08), 0 0 1px 1px rgba(226, 232, 255, 0.7);
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+/* Left Sidebar: "CHOOSE TOOL" */
+.workspace-sidebar {
+  background: #FAF9FE;
+  border-right: 1px solid #ECE7FE;
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #64748B;
+  margin-bottom: 18px;
+  padding-left: 8px;
+  text-transform: uppercase;
+}
+
+.sidebar-tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.tool-tab-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tool-tab-button:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #E2D9FC;
+}
+
+.tool-tab-button.active {
+  background: #FFFFFF;
+  border-color: #8B5CF6;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
+}
+
+.tool-icon-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #EDE9FE;
+  color: #7C3AED;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.tool-tab-button.active .tool-icon-wrapper {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: #FFFFFF;
+}
+
+.tool-meta-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.tool-title-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.tool-tag-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8B8FA3;
+  margin-top: 2px;
+}
+
+.tool-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7C3AED;
+  margin-left: auto;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.6);
+}
+
+.sidebar-latency-card {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2D9FC;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.latency-icon {
+  color: #7C3AED;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.latency-card-text {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Right Main Workspace Area
+   ========================================================================== */
+.workspace-main-content {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+}
+
+.workspace-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.workspace-title-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.active-calc-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.live-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.live-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
+}
+
+.btn-workspace-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-workspace-reset:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+/* Split Pane Grid: Inputs (Left) and Results (Right) */
+.calculator-io-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+/* Left: Form Controls */
+.calc-inputs-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-block-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label-row-helper {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.input-main-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.input-helper-subtext {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.input-with-suffix-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modern-form-input {
+  width: 100%;
+  padding: 13px 44px 13px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0F172A;
+  background: #F8FAFC;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modern-form-input:focus {
+  outline: none;
+  border-color: #6366F1;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.input-suffix-tag {
+  position: absolute;
+  right: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.input-prefix-tag {
+  position: absolute;
+  left: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #64748B;
+  pointer-events: none;
+}
+
+.modern-form-input.has-prefix {
+  padding-left: 36px;
+}
+
+/* Common Presets Chips */
+.presets-group-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.presets-title-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  margin-right: 4px;
+}
+
+.preset-chip-btn {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-chip-btn:hover {
+  background: #EDE9FE;
+  border-color: #C4B5FD;
+  color: #6D28D9;
+}
+
+/* Rate selector grid for GST */
+.rate-pills-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.rate-pill-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px solid #E2E8F0;
+  background: #F8FAFC;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.rate-pill-btn.active {
+  background: #4F46E5;
+  border-color: #4F46E5;
+  color: #FFFFFF;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+}
+
+.mode-toggle-pill-wrap {
+  display: flex;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.mode-toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-toggle-btn.active {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   Right Result Display Card (Matches Specification Exactly)
+   ========================================================================== */
+.calc-result-pane {
+  background: #FAF9FE;
+  border: 1.5px solid #E8E5F7;
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 8px 24px -6px rgba(124, 58, 237, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.result-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-subhead-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #64748B;
+  text-transform: uppercase;
+}
+
+.result-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-hero-number {
+  font-size: 40px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.status-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-normal {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+.badge-underweight {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.badge-overweight {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.badge-obese {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+/* BMI Spectrum Scale Bar */
+.bmi-spectrum-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #FFFFFF;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #E2E8F0;
+}
+
+.spectrum-labels-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.spectrum-bar-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  display: flex;
+  overflow: visible;
+  margin: 6px 0;
+}
+
+.bar-segment {
+  height: 100%;
+}
+
+.seg-blue {
+  width: 20%;
+  background: #3B82F6;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.seg-emerald {
+  width: 32%;
+  background: #10B981;
+}
+
+.seg-amber {
+  width: 25%;
+  background: #F59E0B;
+}
+
+.seg-rose {
+  width: 23%;
+  background: #EF4444;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.spectrum-pin-slider {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background: #0F172A;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  transform: translateX(-50%);
+  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.spectrum-ranges-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+/* Metric Breakdown Table */
+.metrics-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metric-line-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.metric-line-item .metric-title {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.metric-line-item .metric-val {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.metric-divider-dashed {
+  border-bottom: 1px dashed #CBD5E1;
+  margin: 4px 0;
+}
+
+.metric-line-item.optimal-range .metric-val {
+  color: #10B981;
+}
+
+/* Primary Action Button (Matches "Open in Full Dashboard" Solid Purple Pill) */
+.btn-card-action-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 20px;
+  background: #4F46E5;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.btn-card-action-solid:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+}
+
+/* Responsive Handling */
+@media (max-width: 992px) {
+  .workspace-wrapper-card {
+    grid-template-columns: 1fr;
+  }
+  .workspace-sidebar {
+    border-right: none;
+    border-bottom: 1px solid #ECE7FE;
+  }
+  .calculator-io-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-nav-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+}

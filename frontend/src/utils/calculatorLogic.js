@@ -152,8 +152,11 @@ export const calculateEBBillLogic = (units, ratePerUnit = 6.5) => {
     units: numericUnits,
     ratePerUnit: rate,
     energyCharges,
+    baseEnergyCost: energyCharges,
     fixedCharges,
+    fixedCharge: fixedCharges,
     totalAmount,
+    finalAmount: totalAmount,
     isEstimate: true,
   };
 };

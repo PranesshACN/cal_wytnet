@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { login, wytpassLoginUrl } from '../api';
+import { Shield, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 function Login({ setToken }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ssoLoading, setSsoLoading] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const successMessage = queryParams.get('message');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,64 +21,127 @@ function Login({ setToken }) {
     setLoading(true);
 
     try {
-      const data = await login(username, password);
+      const data = await login(email, password);
       setToken(data.access_token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment and try again.');
+      } else {
+        setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleWytPassLogin = async () => {
-    const url = await wytpassLoginUrl();
-    window.location.href = url;
+    try {
+      setSsoLoading(true);
+      setError('');
+      const url = await wytpassLoginUrl();
+      window.location.href = url;
+    } catch (err) {
+      console.error('Failed to initiate WytPass OAuth flow:', err);
+      setError('Could not connect to WytPass identity provider.');
+      setSsoLoading(false);
+    }
   };
 
   return (
     <div className="auth-container">
-      <h2>Login</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            placeholder="Enter your username"
-          />
+      <div className="auth-header">
+        <div className="auth-badge">
+          <Shield size={14} className="badge-icon" />
+          <span>WytNet Centralized Identity</span>
         </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Enter your password"
-          />
-        </div>
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      
-      <div className="divider">
-        <span>OR</span>
+        <h2>Welcome Back</h2>
+        <p className="auth-subtitle">Sign in to your account or authenticate via WytPass IdP</p>
       </div>
-      
-      <button onClick={handleWytPassLogin} className="btn btn-wytpass">
-        <svg className="wytpass-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20px" height="20px" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>
-        Continue with WytPass
+
+      {successMessage && (
+        <div className="success-message">
+          <CheckCircle2 size={16} />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          <AlertCircle size={16} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* FLOW B: Continue with WytPass (Prominent Single Sign-On) */}
+      <button
+        type="button"
+        onClick={handleWytPassLogin}
+        className="btn btn-wytpass"
+        disabled={ssoLoading || loading}
+        id="continue-with-wytpass-btn"
+      >
+        <span className="wytpass-brand-icon">✦</span>
+        <span>{ssoLoading ? 'Redirecting to WytPass...' : 'Continue with WytPass'}</span>
       </button>
 
+      <div className="divider">
+        <span>OR SIGN IN WITH EMAIL</span>
+      </div>
+
+      {/* FLOW A: Direct Email + Password Form */}
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="login-email">Email Address</label>
+          <div className="input-wrapper">
+            <Mail size={16} className="input-icon" />
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <div className="label-row">
+            <label htmlFor="login-password">Password</label>
+            <Link to="/forgot-password" className="forgot-password-link">
+              Forgot password?
+            </Link>
+          </div>
+          <div className="input-wrapper">
+            <Lock size={16} className="input-icon" />
+            <input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••••••"
+              autoComplete="current-password"
+            />
+          </div>
+        </div>
+
+        <button type="submit" className="btn btn-primary" disabled={loading || ssoLoading}>
+          <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+          <ArrowRight size={16} />
+        </button>
+      </form>
+
       <div className="auth-switch">
-        Don't have an account? <Link to="/signup">Sign up</Link>
+        <span>Don't have an account? </span>
+        <Link to="/signup">Create an account</Link>
+      </div>
+
+      <div className="auth-footer-note">
+        <Shield size={12} />
+        <span>Secured by WytNet Identity Layer • RS256 / PKCE OIDC</span>
       </div>
     </div>
   );
