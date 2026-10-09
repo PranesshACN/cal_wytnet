@@ -2,6 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
+import FinanceLoanSection from './FinanceLoanSection';
+import InvestmentSection from './InvestmentSection';
+import TaxSalarySection from './TaxSalarySection';
 import CalculatorGrid from './CalculatorGrid';
 import FeaturesSection from './FeaturesSection';
 import HowItWorksSection from './HowItWorksSection';
@@ -14,14 +17,14 @@ function LandingPage({ token }) {
 
   const handleSelectCalculatorFromGrid = (calcId) => {
     if (token) {
-      navigate('/dashboard');
+      navigate(`/dashboard?tool=${calcId}`);
     } else {
-      navigate('/login');
+      navigate(`/login?redirect=/dashboard?tool=${calcId}`);
     }
   };
 
   const handleExploreCalculators = () => {
-    const element = document.getElementById('calculators');
+    const element = document.getElementById('finance-tools') || document.getElementById('calculators');
     if (element) {
       const navOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
@@ -52,7 +55,22 @@ function LandingPage({ token }) {
         onOpenDashboard={handleOpenDashboard}
       />
 
-      {/* 4 Calculator Cards Collection */}
+      {/* Finance & Loan 10 Calculators Section */}
+      <FinanceLoanSection
+        onSelectCalculator={handleSelectCalculatorFromGrid}
+      />
+
+      {/* Investment 5 Calculators Section */}
+      <InvestmentSection
+        onSelectCalculator={handleSelectCalculatorFromGrid}
+      />
+
+      {/* Tax & Salary 5 Calculators Section */}
+      <TaxSalarySection
+        onSelectCalculator={handleSelectCalculatorFromGrid}
+      />
+
+      {/* Everyday Utilities Toolkit */}
       <CalculatorGrid
         onSelectCalculator={handleSelectCalculatorFromGrid}
       />

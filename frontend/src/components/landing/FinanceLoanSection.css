@@ -1,0 +1,244 @@
+/* ==============================================================================
+   FINANCE & LOAN SECTION (Exact Match with Reference Design)
+   ============================================================================== */
+
+.finance-loan-section {
+  width: 100%;
+  padding: 56px 0 64px 0;
+  background-color: #ffffff;
+}
+
+.finance-loan-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header Row */
+.finance-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.finance-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.finance-header-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.finance-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.finance-section-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.finance-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.finance-view-all-link:hover {
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  transform: translateX(2px);
+}
+
+/* Cards Grid: 5 Columns on Desktop */
+.finance-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* Individual Calculator Card */
+.finance-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 195px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.finance-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Card 6 Active Indicator (Top Blue Border Highlight) */
+.finance-card.card-has-top-indicator {
+  border-top: 3.5px solid #2563eb;
+  padding-top: 20px;
+}
+
+/* Top Icon & Badge */
+.finance-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.finance-card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.finance-card:hover .finance-card-icon-wrap {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.finance-popular-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background-color: #fef3c7;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+}
+
+/* Card Body */
+.finance-card-body {
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.finance-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  margin: 0 0 6px 0;
+  transition: color 0.15s ease;
+}
+
+.finance-card:hover .finance-card-title {
+  color: #2563eb;
+}
+
+.finance-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Card Footer */
+.finance-card-footer {
+  margin-top: auto;
+}
+
+.finance-card-open-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s ease;
+}
+
+.open-arrow {
+  transition: transform 0.2s ease;
+}
+
+.finance-card:hover .open-arrow {
+  transform: translateX(4px);
+}
+
+/* ==============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================== */
+
+@media (max-width: 1200px) {
+  .finance-cards-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .finance-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 720px) {
+  .finance-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  
+  .finance-card {
+    min-height: 180px;
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .finance-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .finance-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .finance-view-all-link {
+    align-self: flex-start;
+    padding-left: 0;
+  }
+}

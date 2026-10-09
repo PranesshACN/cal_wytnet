@@ -208,4 +208,102 @@ export const calculateEBBill = async (units, rate_per_unit) => {
   return response.data;
 };
 
+// 10 Finance & Loan Endpoints
+export const calculateEMI = async (principal, annual_rate, tenure_years) => {
+  const response = await api.post('/calculate/emi', { principal, annual_rate, tenure_years });
+  return response.data;
+};
+
+export const calculateMortgage = async (params) => {
+  const response = await api.post('/calculate/mortgage', params);
+  return response.data;
+};
+
+export const calculateLoanComparison = async (loanA, loanB) => {
+  const response = await api.post('/calculate/loan-comparison', { loan_a: loanA, loan_b: loanB });
+  return response.data;
+};
+
+export const calculateRetirement = async (params) => {
+  const response = await api.post('/calculate/retirement', params);
+  return response.data;
+};
+
+export const calculateCreditCard = async (params) => {
+  const response = await api.post('/calculate/credit-card', params);
+  return response.data;
+};
+
+export const calculateSavingsGoal = async (params) => {
+  const response = await api.post('/calculate/savings-goal', params);
+  return response.data;
+};
+
+export const calculateInflation = async (params) => {
+  const response = await api.post('/calculate/inflation', params);
+  return response.data;
+};
+
+export const calculateNetWorth = async (params) => {
+  const response = await api.post('/calculate/net-worth', params);
+  return response.data;
+};
+
+export const calculateSimpleInterest = async (principal, annual_rate, tenure_years) => {
+  const response = await api.post('/calculate/simple-interest', { principal, annual_rate, tenure_years });
+  return response.data;
+};
+
+export const calculateDownPayment = async (params) => {
+  const response = await api.post('/calculate/down-payment', params);
+  return response.data;
+};
+
+// Investment & Tax Calculators
+export const calculateCompoundInterest = async (params) => {
+  const response = await api.post('/calculate/compound-interest', params);
+  return response.data;
+};
+
+export const calculateSIP = async (params) => {
+  const response = await api.post('/calculate/sip', params);
+  return response.data;
+};
+
+export const calculateROI = async (params) => {
+  const response = await api.post('/calculate/roi', params);
+  return response.data;
+};
+
+export const calculateFD = async (params) => {
+  const response = await api.post('/calculate/fd', params);
+  return response.data;
+};
+
+export const calculateCAGR = async (params) => {
+  const response = await api.post('/calculate/cagr', params);
+  return response.data;
+};
+
+export const calculateSalary = async (params) => {
+  const response = await api.post('/calculate/salary', params);
+  return response.data;
+};
+
+export const calculateIncomeTax = async (params) => {
+  const response = await api.post('/calculate/income-tax', params);
+  return response.data;
+};
+
+export const calculateHourlyToSalary = async (params) => {
+  const response = await api.post('/calculate/hourly-to-salary', params);
+  return response.data;
+};
+
+export const calculateBudget = async (params) => {
+  const response = await api.post('/calculate/budget', params);
+  return response.data;
+};
+
 export default api;
+

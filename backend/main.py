@@ -168,6 +168,137 @@ class EBBillRequest(BaseModel):
     rate_per_unit: float
 
 
+class EMIRequest(BaseModel):
+    principal: float
+    annual_rate: float
+    tenure_years: float
+
+
+class MortgageRequest(BaseModel):
+    home_value: float
+    down_payment_percent: float = 20.0
+    annual_rate: float = 6.5
+    term_years: float = 30.0
+    property_tax_rate: float = 1.2
+    annual_insurance: float = 1200.0
+
+
+class LoanCompareItem(BaseModel):
+    principal: float
+    rate: float
+    tenure_years: float
+
+
+class LoanComparisonRequest(BaseModel):
+    loan_a: LoanCompareItem
+    loan_b: LoanCompareItem
+
+
+class RetirementRequest(BaseModel):
+    current_age: float
+    retirement_age: float
+    current_savings: float = 0.0
+    monthly_contribution: float = 0.0
+    annual_return_rate: float = 8.0
+
+
+class CreditCardRequest(BaseModel):
+    balance: float
+    rate_apr: float
+    monthly_payment: float
+
+
+class SavingsGoalRequest(BaseModel):
+    target_amount: float
+    current_savings: float = 0.0
+    years: float = 3.0
+    expected_return_rate: float = 7.0
+
+
+class InflationRequest(BaseModel):
+    current_amount: float
+    inflation_rate: float = 6.0
+    years: float = 10.0
+
+
+class NetWorthRequest(BaseModel):
+    assets: Dict[str, float] = {}
+    liabilities: Dict[str, float] = {}
+
+
+class SimpleInterestRequest(BaseModel):
+    principal: float
+    annual_rate: float
+    tenure_years: float
+
+
+class DownPaymentRequest(BaseModel):
+    property_price: float
+    down_payment_percent: float = 20.0
+    closing_cost_percent: float = 3.0
+
+
+class CompoundInterestRequest(BaseModel):
+    principal: float
+    annual_rate: float
+    tenure_years: float
+    frequency: int = 1
+    monthly_deposit: float = 0.0
+
+
+class SIPRequest(BaseModel):
+    monthly_investment: float
+    expected_return_rate: float
+    tenure_years: float
+
+
+class ROIRequest(BaseModel):
+    initial_investment: float
+    final_value: float
+    duration_years: float = 1.0
+
+
+class FDRequest(BaseModel):
+    principal: float
+    annual_rate: float
+    tenure_years: float
+    compounding_frequency: int = 4
+
+
+class CAGRRequest(BaseModel):
+    beginning_value: float
+    ending_value: float
+    tenure_years: float
+
+
+class SalaryRequest(BaseModel):
+    gross_amount: float
+    frequency: str = "annual"
+    hours_per_week: float = 40.0
+    weeks_per_year: float = 52.0
+
+
+class IncomeTaxRequest(BaseModel):
+    gross_income: float
+    deductions: float = 50000.0
+
+
+class HourlyToSalaryRequest(BaseModel):
+    hourly_wage: float
+    hours_per_week: float = 40.0
+    paid_weeks: float = 52.0
+    overtime_hours: float = 0.0
+    overtime_multiplier: float = 1.5
+
+
+class BudgetRequest(BaseModel):
+    monthly_income: float
+    needs_amount: float = 0.0
+    wants_amount: float = 0.0
+    savings_amount: float = 0.0
+
+
+
 # FastAPI App
 app = FastAPI(
     title="Calculator API - WytNet Centralized Identity",
@@ -639,6 +770,351 @@ async def calculate_eb_bill(request: EBBillRequest, current_user: User = Depends
     }
 
 
+# ==============================================================================
+# 10 FINANCE & LOAN CALCULATION ENDPOINTS
+# ==============================================================================
+
+@app.post("/calculate/emi")
+async def calculate_emi(req: EMIRequest, current_user: User = Depends(get_current_user)):
+    r = req.annual_rate / (12 * 100)
+    n = req.tenure_years * 12
+    emi = (req.principal * r * ((1 + r) ** n)) / (((1 + r) ** n) - 1)
+    total_payment = emi * n
+    total_interest = total_payment - req.principal
+    return {
+        "monthly_emi": round(emi, 2),
+        "total_interest": round(total_interest, 2),
+        "total_payment": round(total_payment, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/mortgage")
+async def calculate_mortgage(req: MortgageRequest, current_user: User = Depends(get_current_user)):
+    down_payment = (req.home_value * req.down_payment_percent) / 100
+    loan_amount = req.home_value - down_payment
+    r = req.annual_rate / (12 * 100)
+    n = req.term_years * 12
+    monthly_pi = (loan_amount * r * ((1 + r) ** n)) / (((1 + r) ** n) - 1) if loan_amount > 0 else 0
+    monthly_tax = (req.home_value * (req.property_tax_rate / 100)) / 12
+    monthly_ins = req.annual_insurance / 12
+    total_monthly = monthly_pi + monthly_tax + monthly_ins
+    return {
+        "loan_amount": round(loan_amount, 2),
+        "down_payment_amount": round(down_payment, 2),
+        "monthly_principal_interest": round(monthly_pi, 2),
+        "monthly_tax": round(monthly_tax, 2),
+        "monthly_insurance": round(monthly_ins, 2),
+        "total_monthly_payment": round(total_monthly, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/loan-comparison")
+async def calculate_loan_comparison(req: LoanComparisonRequest, current_user: User = Depends(get_current_user)):
+    def compute(p, rate, y):
+        r = rate / (12 * 100)
+        n = y * 12
+        emi = (p * r * ((1 + r) ** n)) / (((1 + r) ** n) - 1)
+        tot = emi * n
+        return emi, tot - p, tot
+
+    emi_a, int_a, tot_a = compute(req.loan_a.principal, req.loan_a.rate, req.loan_a.tenure_years)
+    emi_b, int_b, tot_b = compute(req.loan_b.principal, req.loan_b.rate, req.loan_b.tenure_years)
+    diff = int_a - int_b
+    return {
+        "loan_a": {"monthly_emi": round(emi_a, 2), "total_interest": round(int_a, 2), "total_payment": round(tot_a, 2)},
+        "loan_b": {"monthly_emi": round(emi_b, 2), "total_interest": round(int_b, 2), "total_payment": round(tot_b, 2)},
+        "cheaper_loan": "Loan B" if diff > 0 else "Loan A" if diff < 0 else "Equal",
+        "savings_amount": round(abs(diff), 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/retirement")
+async def calculate_retirement(req: RetirementRequest, current_user: User = Depends(get_current_user)):
+    years = max(1.0, req.retirement_age - req.current_age)
+    months = int(years * 12)
+    r_monthly = (req.annual_return_rate / 100) / 12
+    fv_savings = req.current_savings * ((1 + r_monthly) ** months)
+    fv_contributions = req.monthly_contribution * (((1 + r_monthly) ** months - 1) / r_monthly) if r_monthly > 0 else req.monthly_contribution * months
+    total_corpus = fv_savings + fv_contributions
+    return {
+        "years_to_retire": round(years, 1),
+        "total_corpus": round(total_corpus, 2),
+        "monthly_pension_4pct": round((total_corpus * 0.04) / 12, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/credit-card")
+async def calculate_credit_card(req: CreditCardRequest, current_user: User = Depends(get_current_user)):
+    r = (req.rate_apr / 100) / 12
+    if req.monthly_payment <= req.balance * r:
+        raise HTTPException(status_code=400, detail="Monthly payment must exceed monthly interest charges")
+    curr = req.balance
+    months = 0
+    tot_int = 0
+    while curr > 0.01 and months < 600:
+        interest = curr * r
+        tot_int += interest
+        curr = curr + interest - req.monthly_payment
+        months += 1
+    return {
+        "months_needed": months,
+        "total_interest_paid": round(tot_int, 2),
+        "total_amount_paid": round(req.balance + tot_int, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/savings-goal")
+async def calculate_savings_goal(req: SavingsGoalRequest, current_user: User = Depends(get_current_user)):
+    n = req.years * 12
+    r = (req.expected_return_rate / 100) / 12
+    fv_init = req.current_savings * ((1 + r) ** n)
+    rem = max(0.0, req.target_amount - fv_init)
+    pmt = (rem * r) / (((1 + r) ** n) - 1) if r > 0 else rem / n
+    return {
+        "required_monthly_savings": round(pmt, 2),
+        "target_amount": round(req.target_amount, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/inflation")
+async def calculate_inflation(req: InflationRequest, current_user: User = Depends(get_current_user)):
+    i = req.inflation_rate / 100
+    future_cost = req.current_amount * ((1 + i) ** req.years)
+    purchasing_power = req.current_amount / ((1 + i) ** req.years)
+    return {
+        "future_equivalent_cost": round(future_cost, 2),
+        "future_purchasing_power": round(purchasing_power, 2),
+        "purchasing_power_loss_percent": round((1 - (purchasing_power / req.current_amount)) * 100, 1),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/net-worth")
+async def calculate_net_worth(req: NetWorthRequest, current_user: User = Depends(get_current_user)):
+    tot_assets = sum(req.assets.values())
+    tot_liab = sum(req.liabilities.values())
+    return {
+        "total_assets": round(tot_assets, 2),
+        "total_liabilities": round(tot_liab, 2),
+        "net_worth": round(tot_assets - tot_liab, 2),
+        "debt_to_asset_ratio": round((tot_liab / tot_assets) * 100, 1) if tot_assets > 0 else 0,
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/simple-interest")
+async def calculate_simple_interest(req: SimpleInterestRequest, current_user: User = Depends(get_current_user)):
+    interest = (req.principal * req.annual_rate * req.tenure_years) / 100
+    return {
+        "principal": round(req.principal, 2),
+        "interest_earned": round(interest, 2),
+        "total_amount": round(req.principal + interest, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/down-payment")
+async def calculate_down_payment(req: DownPaymentRequest, current_user: User = Depends(get_current_user)):
+    dp_amt = (req.property_price * req.down_payment_percent) / 100
+    closing_amt = (req.property_price * req.closing_cost_percent) / 100
+    return {
+        "down_payment_amount": round(dp_amt, 2),
+        "loan_required": round(req.property_price - dp_amt, 2),
+        "estimated_closing_costs": round(closing_amt, 2),
+        "total_upfront_cash": round(dp_amt + closing_amt, 2),
+        "user_sub": current_user.sub
+    }
+
+
+# Investment Endpoints
+@app.post("/calculate/compound-interest")
+async def calculate_compound_interest(req: CompoundInterestRequest, current_user: User = Depends(get_current_user)):
+    r = req.annual_rate / 100
+    n = req.frequency or 1
+    total_months = round(req.tenure_years * 12)
+    m_rate = ((1 + r / n) ** (n / 12)) - 1
+    
+    current_balance = req.principal
+    for _ in range(total_months):
+        current_balance = current_balance * (1 + m_rate) + req.monthly_deposit
+
+    total_deposited = req.principal + (req.monthly_deposit * total_months)
+    total_interest = max(0.0, current_balance - total_deposited)
+    return {
+        "initial_principal": round(req.principal, 2),
+        "total_deposited": round(total_deposited, 2),
+        "future_value": round(current_balance, 2),
+        "total_interest": round(total_interest, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/sip")
+async def calculate_sip(req: SIPRequest, current_user: User = Depends(get_current_user)):
+    i = (req.expected_return_rate / 100) / 12
+    n = round(req.tenure_years * 12)
+    total_value = req.monthly_investment * (((1 + i) ** n - 1) / i) * (1 + i) if i > 0 else req.monthly_investment * n
+    total_invested = req.monthly_investment * n
+    return {
+        "total_invested": round(total_invested, 2),
+        "estimated_returns": round(total_value - total_invested, 2),
+        "total_value": round(total_value, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/roi")
+async def calculate_roi(req: ROIRequest, current_user: User = Depends(get_current_user)):
+    profit = req.final_value - req.initial_investment
+    roi_pct = (profit / req.initial_investment) * 100 if req.initial_investment > 0 else 0
+    annualized = (((req.final_value / req.initial_investment) ** (1 / req.duration_years)) - 1) * 100 if (req.duration_years > 0 and req.final_value > 0 and req.initial_investment > 0) else roi_pct
+    return {
+        "net_profit": round(profit, 2),
+        "roi_percentage": round(roi_pct, 2),
+        "annualized_roi": round(annualized, 2),
+        "multiplier": round(req.final_value / req.initial_investment, 2) if req.initial_investment > 0 else 0,
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/fd")
+async def calculate_fd(req: FDRequest, current_user: User = Depends(get_current_user)):
+    n = req.compounding_frequency or 4
+    r = (req.annual_rate / 100) / n
+    periods = n * req.tenure_years
+    maturity = req.principal * ((1 + r) ** periods)
+    return {
+        "principal": round(req.principal, 2),
+        "maturity_amount": round(maturity, 2),
+        "total_interest": round(maturity - req.principal, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/cagr")
+async def calculate_cagr(req: CAGRRequest, current_user: User = Depends(get_current_user)):
+    if req.beginning_value <= 0 or req.tenure_years <= 0 or req.ending_value <= 0:
+        cagr_val = 0.0
+    else:
+        cagr_val = (((req.ending_value / req.beginning_value) ** (1 / req.tenure_years)) - 1) * 100
+    abs_return = ((req.ending_value - req.beginning_value) / req.beginning_value) * 100 if req.beginning_value > 0 else 0
+    return {
+        "cagr": round(cagr_val, 2),
+        "total_gain": round(req.ending_value - req.beginning_value, 2),
+        "absolute_return": round(abs_return, 2),
+        "user_sub": current_user.sub
+    }
+
+
+# Tax & Salary Endpoints
+@app.post("/calculate/salary")
+async def calculate_salary(req: SalaryRequest, current_user: User = Depends(get_current_user)):
+    hours = req.hours_per_week or 40.0
+    weeks = req.weeks_per_year or 52.0
+    freq = req.frequency.lower()
+    
+    annual = req.gross_amount
+    if freq == "monthly": annual = req.gross_amount * 12
+    elif freq == "semi-monthly": annual = req.gross_amount * 24
+    elif freq == "bi-weekly": annual = req.gross_amount * 26
+    elif freq == "weekly": annual = req.gross_amount * weeks
+    elif freq == "hourly": annual = req.gross_amount * hours * weeks
+
+    return {
+        "annual": round(annual, 2),
+        "monthly": round(annual / 12, 2),
+        "semi_monthly": round(annual / 24, 2),
+        "bi_weekly": round(annual / 26, 2),
+        "weekly": round(annual / weeks, 2),
+        "daily": round(annual / (weeks * 5), 2),
+        "hourly": round(annual / (weeks * hours), 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/income-tax")
+async def calculate_income_tax(req: IncomeTaxRequest, current_user: User = Depends(get_current_user)):
+    taxable = max(0.0, req.gross_income - (req.deductions or 0.0))
+    tax = 0.0
+    if taxable <= 300000:
+        tax = 0.0
+    elif taxable <= 700000:
+        tax = 0.0  # Rebate up to 7L
+    else:
+        tax += 400000 * 0.05
+        if taxable <= 1000000:
+            tax += (taxable - 700000) * 0.10
+        else:
+            tax += 300000 * 0.10
+            if taxable <= 1200000:
+                tax += (taxable - 1000000) * 0.15
+            else:
+                tax += 200000 * 0.15
+                if taxable <= 1500000:
+                    tax += (taxable - 1200000) * 0.20
+                else:
+                    tax += 300000 * 0.20
+                    tax += (taxable - 1500000) * 0.30
+    cess = tax * 0.04
+    tot_tax = tax + cess
+    return {
+        "gross_income": round(req.gross_income, 2),
+        "taxable_income": round(taxable, 2),
+        "base_tax": round(tax, 2),
+        "cess": round(cess, 2),
+        "total_tax": round(tot_tax, 2),
+        "effective_rate": round((tot_tax / req.gross_income) * 100, 2) if req.gross_income > 0 else 0,
+        "take_home_annual": round(req.gross_income - tot_tax, 2),
+        "take_home_monthly": round((req.gross_income - tot_tax) / 12, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/hourly-to-salary")
+async def calculate_hourly_to_salary(req: HourlyToSalaryRequest, current_user: User = Depends(get_current_user)):
+    regular = req.hourly_wage * req.hours_per_week
+    overtime = req.overtime_hours * (req.hourly_wage * req.overtime_multiplier)
+    weekly = regular + overtime
+    annual = weekly * req.paid_weeks
+    return {
+        "hourly_wage": round(req.hourly_wage, 2),
+        "regular_weekly": round(regular, 2),
+        "overtime_weekly": round(overtime, 2),
+        "total_weekly": round(weekly, 2),
+        "annual_salary": round(annual, 2),
+        "monthly_salary": round(annual / 12, 2),
+        "bi_weekly_salary": round(annual / 26, 2),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/budget")
+async def calculate_budget(req: BudgetRequest, current_user: User = Depends(get_current_user)):
+    needs = req.needs_amount
+    wants = req.wants_amount
+    savings = req.savings_amount
+    total_spent = needs + wants + savings
+    return {
+        "monthly_income": round(req.monthly_income, 2),
+        "needs": round(needs, 2),
+        "wants": round(wants, 2),
+        "savings": round(savings, 2),
+        "total_spent": round(total_spent, 2),
+        "remaining": round(req.monthly_income - total_spent, 2),
+        "needs_percent": round((needs / req.monthly_income) * 100, 1) if req.monthly_income > 0 else 0,
+        "wants_percent": round((wants / req.monthly_income) * 100, 1) if req.monthly_income > 0 else 0,
+        "savings_percent": round((savings / req.monthly_income) * 100, 1) if req.monthly_income > 0 else 0,
+        "user_sub": current_user.sub
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

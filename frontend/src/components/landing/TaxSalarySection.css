@@ -1,0 +1,221 @@
+/* ==============================================================================
+   TAX & SALARY SECTION (Exact Match with Reference Design)
+   ============================================================================== */
+
+.tax-salary-section {
+  width: 100%;
+  padding: 24px 0 60px 0;
+  background-color: #ffffff;
+}
+
+.tax-salary-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header Row */
+.tax-salary-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.tax-salary-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tax-salary-header-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: #fefce8;
+  border: 1px solid #fef08a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ca8a04;
+  flex-shrink: 0;
+}
+
+.tax-salary-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.tax-salary-section-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.tax-salary-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.tax-salary-view-all-link:hover {
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  transform: translateX(2px);
+}
+
+/* Cards Grid: 5 Columns */
+.tax-salary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* Individual Calculator Card */
+.tax-salary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 195px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.tax-salary-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Salary Calculator Orange Top Active Indicator from screenshot */
+.tax-salary-card.card-has-orange-indicator {
+  border-top: 3.5px solid #f59e0b;
+  padding-top: 20px;
+}
+
+/* Top Icon & Badge */
+.tax-salary-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tax-salary-card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.tax-salary-card:hover .tax-salary-card-icon-wrap {
+  background-color: #fefce8;
+  color: #ca8a04;
+}
+
+.tax-salary-popular-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background-color: #fef3c7;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+}
+
+/* Card Body */
+.tax-salary-card-body {
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.tax-salary-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  margin: 0 0 6px 0;
+  transition: color 0.15s ease;
+}
+
+.tax-salary-card:hover .tax-salary-card-title {
+  color: #2563eb;
+}
+
+.tax-salary-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Footer */
+.tax-salary-card-footer {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.tax-salary-card-open-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.2s ease;
+}
+
+.tax-salary-card-open-link .open-arrow {
+  transition: transform 0.2s ease;
+}
+
+.tax-salary-card:hover .tax-salary-card-open-link .open-arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 1120px) {
+  .tax-salary-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .tax-salary-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tax-salary-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
