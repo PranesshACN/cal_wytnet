@@ -1,0 +1,221 @@
+/* ==============================================================================
+   HEALTH & FITNESS SECTION (Exact Match with Reference Design)
+   ============================================================================== */
+
+.health-fitness-section {
+  width: 100%;
+  padding: 30px 0 60px 0;
+  background-color: #ffffff;
+}
+
+.health-fitness-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header Row */
+.health-fitness-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.health-fitness-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.health-fitness-header-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  flex-shrink: 0;
+}
+
+.health-fitness-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.health-fitness-section-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.health-fitness-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.health-fitness-view-all-link:hover {
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  transform: translateX(2px);
+}
+
+/* Cards Grid: 5 Columns on Desktop */
+.health-fitness-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* Individual Calculator Card */
+.health-fitness-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 195px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.health-fitness-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Water Intake Calculator Top Emerald Indicator from screenshot */
+.health-fitness-card.card-has-emerald-indicator {
+  border-top: 3.5px solid #059669;
+  padding-top: 20px;
+}
+
+/* Top Icon & Badge */
+.health-fitness-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.health-fitness-card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.health-fitness-card:hover .health-fitness-card-icon-wrap {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.health-fitness-popular-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background-color: #fef3c7;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+}
+
+/* Card Body */
+.health-fitness-card-body {
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.health-fitness-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  margin: 0 0 6px 0;
+  transition: color 0.15s ease;
+}
+
+.health-fitness-card:hover .health-fitness-card-title {
+  color: #059669;
+}
+
+.health-fitness-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Footer */
+.health-fitness-card-footer {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.health-fitness-card-open-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.2s ease;
+}
+
+.health-fitness-card-open-link .open-arrow {
+  transition: transform 0.2s ease;
+}
+
+.health-fitness-card:hover .health-fitness-card-open-link .open-arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 1120px) {
+  .health-fitness-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .health-fitness-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .health-fitness-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

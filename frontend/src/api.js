@@ -305,5 +305,42 @@ export const calculateBudget = async (params) => {
   return response.data;
 };
 
+// Health & Fitness Calculators
+export const calculateCalorie = async (params) => {
+  const response = await api.post('/calculate/calorie', params);
+  return response.data;
+};
+
+export const calculateIdealWeight = async (params) => {
+  const response = await api.post('/calculate/ideal-weight', params);
+  return response.data;
+};
+
+export const calculateBodyFat = async (params) => {
+  const response = await api.post('/calculate/body-fat', params);
+  return response.data;
+};
+
+export const calculatePregnancyDueDate = async (params) => {
+  const response = await api.post('/calculate/pregnancy-due-date', params);
+  return response.data;
+};
+
+export const calculateWaterIntake = async (params) => {
+  const response = await api.post('/calculate/water-intake', params);
+  return response.data;
+};
+
+export const calculateSleep = async (params) => {
+  const response = await api.post('/calculate/sleep', params);
+  return response.data;
+};
+
+export const calculateTargetHeartRate = async (params) => {
+  const response = await api.post('/calculate/target-heart-rate', params);
+  return response.data;
+};
+
 export default api;
+
 

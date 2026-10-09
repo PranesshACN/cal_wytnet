@@ -5,6 +5,7 @@ import HeroSection from './HeroSection';
 import FinanceLoanSection from './FinanceLoanSection';
 import InvestmentSection from './InvestmentSection';
 import TaxSalarySection from './TaxSalarySection';
+import HealthFitnessSection from './HealthFitnessSection';
 import CalculatorGrid from './CalculatorGrid';
 import FeaturesSection from './FeaturesSection';
 import HowItWorksSection from './HowItWorksSection';
@@ -67,6 +68,11 @@ function LandingPage({ token }) {
 
       {/* Tax & Salary 5 Calculators Section */}
       <TaxSalarySection
+        onSelectCalculator={handleSelectCalculatorFromGrid}
+      />
+
+      {/* Health & Fitness 8 Calculators Section */}
+      <HealthFitnessSection
         onSelectCalculator={handleSelectCalculatorFromGrid}
       />
 

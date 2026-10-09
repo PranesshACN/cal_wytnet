@@ -25,6 +25,13 @@ import {
   calculateIncomeTax,
   calculateHourlyToSalary,
   calculateBudget,
+  calculateCalorie,
+  calculateIdealWeight,
+  calculateBodyFat,
+  calculatePregnancyDueDate,
+  calculateWaterIntake,
+  calculateSleep,
+  calculateTargetHeartRate,
 } from '../api';
 import {
   calculateBMILogic,
@@ -50,6 +57,13 @@ import {
   calculateIncomeTaxLogic,
   calculateHourlyToSalaryLogic,
   calculateBudgetLogic,
+  calculateCalorieLogic,
+  calculateIdealWeightLogic,
+  calculateBodyFatLogic,
+  calculatePregnancyDueDateLogic,
+  calculateWaterIntakeLogic,
+  calculateSleepLogic,
+  calculateTargetHeartRateLogic,
 } from '../utils/calculatorLogic';
 import {
   Activity,
@@ -77,6 +91,13 @@ import {
   FileText,
   Clock,
   FileSpreadsheet,
+  Heart,
+  Scale,
+  Flame,
+  PlusCircle,
+  Droplet,
+  Moon,
+  HeartPulse,
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -217,6 +238,42 @@ function Dashboard({ token, onLogout }) {
   const [budWants, setBudWants] = useState('20000');
   const [budSavings, setBudSavings] = useState('15000');
 
+  // Health & Fitness States
+  // 20. Calorie
+  const [calAge, setCalAge] = useState('28');
+  const [calGender, setCalGender] = useState('male');
+  const [calWeight, setCalWeight] = useState('72');
+  const [calHeight, setCalHeight] = useState('175');
+  const [calActivity, setCalActivity] = useState('moderate');
+
+  // 21. Ideal Weight
+  const [iwHeight, setIwHeight] = useState('175');
+  const [iwGender, setIwGender] = useState('male');
+
+  // 22. Body Fat
+  const [bfGender, setBfGender] = useState('male');
+  const [bfHeight, setBfHeight] = useState('175');
+  const [bfWaist, setBfWaist] = useState('84');
+  const [bfNeck, setBfNeck] = useState('38');
+  const [bfHip, setBfHip] = useState('95');
+
+  // 23. Pregnancy Due Date
+  const defaultLmpDate = new Date();
+  defaultLmpDate.setDate(defaultLmpDate.getDate() - 70);
+  const [pregLmp, setPregLmp] = useState(defaultLmpDate.toISOString().split('T')[0]);
+
+  // 24. Water Intake
+  const [waterWeight, setWaterWeight] = useState('70');
+  const [waterActivity, setWaterActivity] = useState('30');
+
+  // 25. Sleep
+  const [sleepTarget, setSleepTarget] = useState('07:00');
+  const [sleepMode, setSleepMode] = useState('wake');
+
+  // 26. Target Heart Rate
+  const [thrAge, setThrAge] = useState('28');
+  const [thrRhr, setThrRhr] = useState('68');
+
   // Essentials: BMI, Age, GST, EB
   const [bmiWeight, setBmiWeight] = useState('70');
   const [bmiHeight, setBmiHeight] = useState('175');
@@ -299,8 +356,17 @@ function Dashboard({ token, onLogout }) {
   const hResult = calculateHourlyToSalaryLogic(hWage, hHours, hWeeks, hOtHours);
   const budResult = calculateBudgetLogic(budIncome, budNeeds, budWants, budSavings);
 
-  // Essentials Calculations
+  // Health & Fitness Calculations
   const bmiResult = calculateBMILogic(parseFloat(bmiWeight), parseFloat(bmiHeight));
+  const calResult = calculateCalorieLogic(calAge, calGender, calWeight, calHeight, calActivity);
+  const iwResult = calculateIdealWeightLogic(iwHeight, iwGender);
+  const bfResult = calculateBodyFatLogic(bfGender, bfHeight, bfWaist, bfNeck, bfHip);
+  const pregResult = calculatePregnancyDueDateLogic(pregLmp);
+  const waterResult = calculateWaterIntakeLogic(waterWeight, waterActivity);
+  const sleepResult = calculateSleepLogic(sleepTarget, sleepMode);
+  const thrResult = calculateTargetHeartRateLogic(thrAge, thrRhr);
+
+  // Utilities Calculations
   const ageResult = calculateAgeLogic(birthDate);
   const gstResult = calculateGSTLogic(gstAmount, gstRate, isInclusive);
   const ebResult = calculateEBBillLogic(ebUnits, ebRate);
@@ -404,6 +470,32 @@ function Dashboard({ token, onLogout }) {
     } else if (activeTab === 'bmi') {
       setBmiWeight('70');
       setBmiHeight('175');
+    } else if (activeTab === 'calorie') {
+      setCalAge('28');
+      setCalGender('male');
+      setCalWeight('72');
+      setCalHeight('175');
+      setCalActivity('moderate');
+    } else if (activeTab === 'ideal-weight') {
+      setIwHeight('175');
+      setIwGender('male');
+    } else if (activeTab === 'body-fat') {
+      setBfGender('male');
+      setBfHeight('175');
+      setBfWaist('84');
+      setBfNeck('38');
+      setBfHip('95');
+    } else if (activeTab === 'pregnancy-due-date') {
+      setPregLmp(defaultLmpDate.toISOString().split('T')[0]);
+    } else if (activeTab === 'water-intake') {
+      setWaterWeight('70');
+      setWaterActivity('30');
+    } else if (activeTab === 'sleep') {
+      setSleepTarget('07:00');
+      setSleepMode('wake');
+    } else if (activeTab === 'target-heart-rate') {
+      setThrAge('28');
+      setThrRhr('68');
     } else if (activeTab === 'age') {
       setBirthDate(defaultDob.toISOString().split('T')[0]);
     } else if (activeTab === 'gst') {
@@ -557,6 +649,46 @@ function Dashboard({ token, onLogout }) {
         });
       } else if (activeTab === 'bmi' && bmiWeight && bmiHeight) {
         await calculateBMI(parseFloat(bmiWeight), parseFloat(bmiHeight));
+      } else if (activeTab === 'calorie' && calWeight && calHeight) {
+        await calculateCalorie({
+          age: parseFloat(calAge),
+          gender: calGender,
+          weight: parseFloat(calWeight),
+          height: parseFloat(calHeight),
+          activity_level: calActivity,
+        });
+      } else if (activeTab === 'ideal-weight' && iwHeight) {
+        await calculateIdealWeight({
+          height: parseFloat(iwHeight),
+          gender: iwGender,
+        });
+      } else if (activeTab === 'body-fat' && bfHeight && bfWaist && bfNeck) {
+        await calculateBodyFat({
+          gender: bfGender,
+          height: parseFloat(bfHeight),
+          waist: parseFloat(bfWaist),
+          neck: parseFloat(bfNeck),
+          hip: parseFloat(bfHip || 0),
+        });
+      } else if (activeTab === 'pregnancy-due-date' && pregLmp) {
+        await calculatePregnancyDueDate({
+          lmp_date: pregLmp,
+        });
+      } else if (activeTab === 'water-intake' && waterWeight) {
+        await calculateWaterIntake({
+          weight: parseFloat(waterWeight),
+          activity_minutes: parseFloat(waterActivity || 30),
+        });
+      } else if (activeTab === 'sleep' && sleepTarget) {
+        await calculateSleep({
+          target_time: sleepTarget,
+          mode: sleepMode,
+        });
+      } else if (activeTab === 'target-heart-rate' && thrAge) {
+        await calculateTargetHeartRate({
+          age: parseFloat(thrAge),
+          resting_heart_rate: parseFloat(thrRhr || 70),
+        });
       } else if (activeTab === 'age' && birthDate) {
         await calculateAge(birthDate);
       } else if (activeTab === 'gst' && gstAmount && gstRate) {
@@ -603,13 +735,23 @@ function Dashboard({ token, onLogout }) {
     { id: 'budget', label: 'Budget Calculator', tag: 'Tax & Salary', icon: FileSpreadsheet },
   ];
 
-  const essentialTabs = [
-    { id: 'bmi', label: 'BMI Calculator', tag: 'Health', icon: Activity },
-    { id: 'age', label: 'Age Calculator', tag: 'Time', icon: CalendarDays },
+  const healthTabs = [
+    { id: 'bmi', label: 'BMI Calculator', tag: 'Health & Fitness', icon: Scale, isPopular: true },
+    { id: 'calorie', label: 'Calorie Calculator', tag: 'Health & Fitness', icon: Flame, isPopular: true },
+    { id: 'ideal-weight', label: 'Ideal Weight', tag: 'Health & Fitness', icon: Heart },
+    { id: 'body-fat', label: 'Body Fat Calculator', tag: 'Health & Fitness', icon: Activity },
+    { id: 'pregnancy-due-date', label: 'Pregnancy Due Date', tag: 'Health & Fitness', icon: PlusCircle },
+    { id: 'water-intake', label: 'Water Intake', tag: 'Health & Fitness', icon: Droplet },
+    { id: 'sleep', label: 'Sleep Calculator', tag: 'Health & Fitness', icon: Moon },
+    { id: 'target-heart-rate', label: 'Target Heart Rate', tag: 'Health & Fitness', icon: HeartPulse },
+  ];
+
+  const utilityTabs = [
+    { id: 'age', label: 'Age Calculator', tag: 'Utilities', icon: CalendarDays },
     { id: 'eb', label: 'EB Bill Calculator', tag: 'Utilities', icon: Zap },
   ];
 
-  const allTabs = [...financeTabs, ...investmentTabs, ...taxSalaryTabs, ...essentialTabs];
+  const allTabs = [...financeTabs, ...investmentTabs, ...taxSalaryTabs, ...healthTabs, ...utilityTabs];
   const activeTabMeta = allTabs.find((t) => t.id === activeTab) || financeTabs[0];
 
   return (
@@ -751,12 +893,41 @@ function Dashboard({ token, onLogout }) {
             })}
           </div>
 
-          {/* Group 4: Essentials (3) */}
+          {/* Group 4: Health & Fitness (8) */}
           <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
-            DAILY ESSENTIALS (3)
+            HEALTH & FITNESS (8)
           </div>
           <div className="sidebar-tools-list">
-            {essentialTabs.map((tab) => {
+            {healthTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                  onClick={() => handleSelectTab(tab.id)}
+                >
+                  <div className="tool-icon-wrapper">
+                    <Icon size={18} />
+                  </div>
+                  <div className="tool-meta-wrapper">
+                    <span className="tool-title-text">{tab.label}</span>
+                    <span className="tool-tag-text">{tab.tag}</span>
+                  </div>
+                  {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
+                  {isActive && <div className="tool-active-dot" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Group 5: Utilities (2) */}
+          <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
+            DAILY UTILITIES (2)
+          </div>
+          <div className="sidebar-tools-list">
+            {utilityTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -3111,6 +3282,790 @@ function Dashboard({ token, onLogout }) {
                           <span className="stat-box-val">
                             {bmiResult.minNormalWeight} - {bmiResult.maxNormalWeight} kg
                           </span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 20. CALORIE CALCULATOR */}
+            {activeTab === 'calorie' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Age (Years)</label>
+                    </div>
+                    <input
+                      type="number"
+                      value={calAge}
+                      onChange={(e) => setCalAge(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="28"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Gender</label>
+                    </div>
+                    <select
+                      value={calGender}
+                      onChange={(e) => setCalGender(e.target.value)}
+                      className="modern-form-input"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Weight (kg)</label>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={calWeight}
+                      onChange={(e) => setCalWeight(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="72"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Height (cm)</label>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={calHeight}
+                      onChange={(e) => setCalHeight(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="175"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Activity Level</label>
+                    </div>
+                    <select
+                      value={calActivity}
+                      onChange={(e) => setCalActivity(e.target.value)}
+                      className="modern-form-input"
+                    >
+                      <option value="sedentary">Sedentary (Little or no exercise)</option>
+                      <option value="light">Light (Exercise 1-3 times/week)</option>
+                      <option value="moderate">Moderate (Exercise 4-5 times/week)</option>
+                      <option value="active">Active (Daily exercise or intense sports)</option>
+                      <option value="very_active">Very Active (Intense training / physical job)</option>
+                    </select>
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Presets:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setCalAge('25');
+                        setCalGender('female');
+                        setCalWeight('58');
+                        setCalHeight('165');
+                        setCalActivity('light');
+                      }}
+                    >
+                      Female 25y (58kg, Light)
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setCalAge('30');
+                        setCalGender('male');
+                        setCalWeight('78');
+                        setCalHeight('178');
+                        setCalActivity('moderate');
+                      }}
+                    >
+                      Male 30y (78kg, Moderate)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {calResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">DAILY MAINTENANCE ENERGY (TDEE)</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {calResult.maintenanceCalories.toLocaleString('en-IN')} kcal/day
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            BMR: {calResult.bmr} kcal
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Basal Metabolic Rate</span>
+                          <span className="stat-box-val">{calResult.bmr} kcal</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Mild Weight Loss (-0.25kg/wk)</span>
+                          <span className="stat-box-val text-violet">{calResult.mildWeightLoss} kcal</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Weight Loss (-0.5kg/wk)</span>
+                          <span className="stat-box-val text-violet">{calResult.weightLoss} kcal</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Weight Gain (+0.5kg/wk)</span>
+                          <span className="stat-box-val text-emerald">{calResult.weightGain} kcal</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 21. IDEAL WEIGHT CALCULATOR */}
+            {activeTab === 'ideal-weight' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Height (cm)</label>
+                      <span className="input-helper-subtext">Height in centimeters</span>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={iwHeight}
+                      onChange={(e) => setIwHeight(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="175"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Gender</label>
+                      <span className="input-helper-subtext">Biological sex for formulas</span>
+                    </div>
+                    <select
+                      value={iwGender}
+                      onChange={(e) => setIwGender(e.target.value)}
+                      className="modern-form-input"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Heights:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setIwHeight('160')}
+                    >
+                      160 cm (5'3")
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setIwHeight('172')}
+                    >
+                      172 cm (5'8")
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setIwHeight('183')}
+                    >
+                      183 cm (6'0")
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {iwResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">RECOMMENDED IDEAL WEIGHT (DEVINE)</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {iwResult.devineWeightKg} kg
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            Healthy Range: {iwResult.idealRange}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Devine Formula</span>
+                          <span className="stat-box-val">{iwResult.devineWeightKg} kg</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Robinson Formula</span>
+                          <span className="stat-box-val text-violet">{iwResult.robinsonWeightKg} kg</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Healthy BMI Min (18.5)</span>
+                          <span className="stat-box-val">{iwResult.minHealthyWeightKg} kg</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Healthy BMI Max (24.9)</span>
+                          <span className="stat-box-val">{iwResult.maxHealthyWeightKg} kg</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 22. BODY FAT CALCULATOR */}
+            {activeTab === 'body-fat' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <label className="input-main-label">Gender</label>
+                    <select
+                      value={bfGender}
+                      onChange={(e) => setBfGender(e.target.value)}
+                      className="modern-form-input"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <div className="input-block-modern">
+                    <label className="input-main-label">Height (cm)</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={bfHeight}
+                      onChange={(e) => setBfHeight(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="175"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <label className="input-main-label">Waist Circumference (cm)</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={bfWaist}
+                      onChange={(e) => setBfWaist(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="84"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <label className="input-main-label">Neck Circumference (cm)</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={bfNeck}
+                      onChange={(e) => setBfNeck(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="38"
+                    />
+                  </div>
+
+                  {bfGender === 'female' && (
+                    <div className="input-block-modern">
+                      <label className="input-main-label">Hip Circumference (cm)</label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={bfHip}
+                        onChange={(e) => setBfHip(e.target.value)}
+                        className="modern-form-input"
+                        placeholder="95"
+                      />
+                    </div>
+                  )}
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Presets:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setBfGender('male');
+                        setBfHeight('175');
+                        setBfWaist('82');
+                        setBfNeck('38');
+                      }}
+                    >
+                      Standard Male
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setBfGender('female');
+                        setBfHeight('165');
+                        setBfWaist('72');
+                        setBfNeck('33');
+                        setBfHip('96');
+                      }}
+                    >
+                      Standard Female
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {bfResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">BODY FAT PERCENTAGE (U.S. NAVY METHOD)</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {bfResult.bodyFatPercentage}%
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            {bfResult.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Category</span>
+                          <span className="stat-box-val">{bfResult.category}</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Fat Mass</span>
+                          <span className="stat-box-val text-violet">{bfResult.fatMassPercentage}%</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Lean Body Mass</span>
+                          <span className="stat-box-val text-emerald">{bfResult.leanMassPercentage}%</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Method</span>
+                          <span className="stat-box-val">U.S. Navy Formula</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 23. PREGNANCY DUE DATE CALCULATOR */}
+            {activeTab === 'pregnancy-due-date' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">First Day of Last Period (LMP)</label>
+                      <span className="input-helper-subtext">Last menstrual cycle start date</span>
+                    </div>
+                    <input
+                      type="date"
+                      value={pregLmp}
+                      onChange={(e) => setPregLmp(e.target.value)}
+                      className="modern-form-input"
+                    />
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Recent LMP:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() - 42); // 6 weeks ago
+                        setPregLmp(d.toISOString().split('T')[0]);
+                      }}
+                    >
+                      6 Weeks Ago
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() - 84); // 12 weeks ago
+                        setPregLmp(d.toISOString().split('T')[0]);
+                      }}
+                    >
+                      12 Weeks Ago
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() - 140); // 20 weeks ago
+                        setPregLmp(d.toISOString().split('T')[0]);
+                      }}
+                    >
+                      20 Weeks Ago
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {pregResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">ESTIMATED DUE DATE (EDD)</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {pregResult.dueDateFormatted}
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            {pregResult.trimester}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Gestational Age</span>
+                          <span className="stat-box-val">
+                            {pregResult.currentWeeks}w {pregResult.currentDays}d
+                          </span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Days to Arrival</span>
+                          <span className="stat-box-val text-violet">
+                            {pregResult.daysRemaining} days
+                          </span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Trimester Stage</span>
+                          <span className="stat-box-val">{pregResult.trimester.split(' ')[0]} Trimester</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Clinical Formula</span>
+                          <span className="stat-box-val">Naegele's Rule (+280d)</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 24. WATER INTAKE CALCULATOR */}
+            {activeTab === 'water-intake' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Body Weight (kg)</label>
+                      <span className="input-helper-subtext">35ml per kg base baseline</span>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={waterWeight}
+                      onChange={(e) => setWaterWeight(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="70"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Daily Exercise / Activity (Minutes)</label>
+                      <span className="input-helper-subtext">+350ml per 30 minutes</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={waterActivity}
+                      onChange={(e) => setWaterActivity(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="30"
+                    />
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Activity:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setWaterActivity('0')}
+                    >
+                      Rest Day (0 min)
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setWaterActivity('45')}
+                    >
+                      Moderate Gym (45 min)
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => setWaterActivity('90')}
+                    >
+                      Intense / Cardio (90 min)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {waterResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">RECOMMENDED DAILY WATER INTAKE</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {waterResult.litersPerDay} Liters / day
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            ~{waterResult.glassesPerDay} Standard Glasses
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Total Volume</span>
+                          <span className="stat-box-val">{waterResult.millilitersPerDay.toLocaleString('en-IN')} mL</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Glasses (250ml)</span>
+                          <span className="stat-box-val text-violet">{waterResult.glassesPerDay} glasses</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Base Requirement</span>
+                          <span className="stat-box-val">{(waterResult.weightKg * 35).toLocaleString('en-IN')} mL</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Workout Compensation</span>
+                          <span className="stat-box-val text-emerald">+{Math.round((waterResult.activityMinutes / 30) * 350)} mL</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 25. SLEEP CALCULATOR */}
+            {activeTab === 'sleep' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Target Time</label>
+                      <span className="input-helper-subtext">Time to wake or go to bed</span>
+                    </div>
+                    <input
+                      type="time"
+                      value={sleepTarget}
+                      onChange={(e) => setSleepTarget(e.target.value)}
+                      className="modern-form-input"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Calculation Mode</label>
+                    </div>
+                    <select
+                      value={sleepMode}
+                      onChange={(e) => setSleepMode(e.target.value)}
+                      className="modern-form-input"
+                    >
+                      <option value="wake">I want to wake up at this time</option>
+                      <option value="bed">I am going to bed at this time</option>
+                    </select>
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Common Times:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setSleepTarget('06:30');
+                        setSleepMode('wake');
+                      }}
+                    >
+                      Wake @ 6:30 AM
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setSleepTarget('07:30');
+                        setSleepMode('wake');
+                      }}
+                    >
+                      Wake @ 7:30 AM
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setSleepTarget('23:00');
+                        setSleepMode('bed');
+                      }}
+                    >
+                      Bed @ 11:00 PM
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {sleepResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">
+                          OPTIMAL {sleepResult.mode === 'wake' ? 'BEDTIMES' : 'WAKE TIMES'} (90-MIN CYCLES)
+                        </span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {sleepResult.suggestions.find((s) => s.isRecommended)?.time}
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            Optimal 5 Cycles (7.5h)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        {sleepResult.suggestions.map((item, idx) => (
+                          <div key={idx} className="metric-stat-box">
+                            <span className="stat-box-label">
+                              {item.cycles} Cycles ({item.hours} hrs)
+                              {item.isRecommended ? ' ⭐' : ''}
+                            </span>
+                            <span className={`stat-box-val ${item.isRecommended ? 'text-emerald' : 'text-violet'}`}>
+                              {item.time}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {/* 26. TARGET HEART RATE CALCULATOR */}
+            {activeTab === 'target-heart-rate' && (
+              <>
+                <div className="calc-inputs-pane">
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Age (Years)</label>
+                      <span className="input-helper-subtext">Calculates Max HR (220 - Age)</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={thrAge}
+                      onChange={(e) => setThrAge(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="28"
+                    />
+                  </div>
+
+                  <div className="input-block-modern">
+                    <div className="label-row-helper">
+                      <label className="input-main-label">Resting Heart Rate (bpm)</label>
+                      <span className="input-helper-subtext">Optional (standard ~60-75 bpm)</span>
+                    </div>
+                    <input
+                      type="number"
+                      value={thrRhr}
+                      onChange={(e) => setThrRhr(e.target.value)}
+                      className="modern-form-input"
+                      placeholder="68"
+                    />
+                  </div>
+
+                  <div className="presets-group-row">
+                    <span className="presets-title-tag">Age Presets:</span>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setThrAge('24');
+                        setThrRhr('64');
+                      }}
+                    >
+                      Age 24 (RHR 64)
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setThrAge('35');
+                        setThrRhr('70');
+                      }}
+                    >
+                      Age 35 (RHR 70)
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-chip-btn"
+                      onClick={() => {
+                        setThrAge('50');
+                        setThrRhr('72');
+                      }}
+                    >
+                      Age 50 (RHR 72)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calc-result-pane">
+                  {thrResult ? (
+                    <>
+                      <div className="result-card-header">
+                        <span className="result-subhead-label">FAT BURNING / ENDURANCE ZONE (60-70%)</span>
+                        <div className="result-score-row">
+                          <span className="result-hero-number text-emerald">
+                            {thrResult.zone2.range}
+                          </span>
+                          <span className="status-pill-badge badge-normal">
+                            Max HR: {thrResult.maxHeartRate} bpm
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-metrics-grid">
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Zone 1 (Warm Up 50-60%)</span>
+                          <span className="stat-box-val">{thrResult.zone1.range}</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Zone 2 (Fat Burn 60-70%)</span>
+                          <span className="stat-box-val text-emerald">{thrResult.zone2.range}</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Zone 3 (Aerobic Cardio 70-80%)</span>
+                          <span className="stat-box-val text-violet">{thrResult.zone3.range}</span>
+                        </div>
+                        <div className="metric-stat-box">
+                          <span className="stat-box-label">Zone 4 (Anaerobic 80-90%)</span>
+                          <span className="stat-box-val">{thrResult.zone4.range}</span>
                         </div>
                       </div>
                     </>

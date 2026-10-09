@@ -832,3 +832,287 @@ export const calculateBudgetLogic = (
     targetSavings: +targetSavings.toFixed(2),
   };
 };
+
+// -------------------------------------------------------------
+// HEALTH & FITNESS CALCULATORS
+// -------------------------------------------------------------
+
+// 20. Calorie Calculator (Mifflin-St Jeor Formula for BMR & TDEE)
+export const calculateCalorieLogic = (
+  age,
+  gender = 'male',
+  weightKg,
+  heightCm,
+  activityLevel = 'moderate'
+) => {
+  const A = parseFloat(age);
+  const W = parseFloat(weightKg);
+  const H = parseFloat(heightCm);
+
+  if (isNaN(A) || A <= 0 || isNaN(W) || W <= 0 || isNaN(H) || H <= 0) {
+    return null;
+  }
+
+  // BMR Calculation (Mifflin-St Jeor)
+  let bmr = 10 * W + 6.25 * H - 5 * A;
+  if (gender.toLowerCase() === 'female') {
+    bmr -= 161;
+  } else {
+    bmr += 5;
+  }
+
+  // Activity multipliers
+  const multipliers = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9,
+  };
+  const mult = multipliers[activityLevel.toLowerCase()] || 1.55;
+  const maintenance = Math.round(bmr * mult);
+
+  return {
+    bmr: Math.round(bmr),
+    maintenanceCalories: maintenance,
+    mildWeightLoss: Math.round(maintenance - 250),
+    weightLoss: Math.round(maintenance - 500),
+    mildWeightGain: Math.round(maintenance + 250),
+    weightGain: Math.round(maintenance + 500),
+    activityMultiplier: mult,
+  };
+};
+
+// 21. Ideal Weight Calculator (Devine & Robinson Formulas + Healthy BMI Range)
+export const calculateIdealWeightLogic = (heightCm, gender = 'male') => {
+  const H = parseFloat(heightCm);
+  if (isNaN(H) || H <= 0) return null;
+
+  const heightInches = H / 2.54;
+  const inchesOver5Ft = Math.max(0, heightInches - 60);
+
+  // Devine formula
+  const devineKg = gender.toLowerCase() === 'female'
+    ? 45.5 + 2.3 * inchesOver5Ft
+    : 50.0 + 2.3 * inchesOver5Ft;
+
+  // Robinson formula
+  const robinsonKg = gender.toLowerCase() === 'female'
+    ? 49.0 + 1.7 * inchesOver5Ft
+    : 52.0 + 1.9 * inchesOver5Ft;
+
+  // Healthy BMI bounds (18.5 - 24.9)
+  const heightM = H / 100;
+  const minBmiWeight = 18.5 * (heightM * heightM);
+  const maxBmiWeight = 24.9 * (heightM * heightM);
+
+  return {
+    heightCm: H,
+    devineWeightKg: +devineKg.toFixed(1),
+    robinsonWeightKg: +robinsonKg.toFixed(1),
+    minHealthyWeightKg: +minBmiWeight.toFixed(1),
+    maxHealthyWeightKg: +maxBmiWeight.toFixed(1),
+    idealRange: `${minBmiWeight.toFixed(1)} - ${maxBmiWeight.toFixed(1)} kg`,
+  };
+};
+
+// 22. Body Fat Calculator (U.S. Navy Method)
+export const calculateBodyFatLogic = (
+  gender = 'male',
+  heightCm,
+  waistCm,
+  neckCm,
+  hipCm = 0
+) => {
+  const H = parseFloat(heightCm);
+  const W = parseFloat(waistCm);
+  const N = parseFloat(neckCm);
+  const Hip = parseFloat(hipCm) || 0;
+
+  if (isNaN(H) || H <= 0 || isNaN(W) || W <= 0 || isNaN(N) || N <= 0) {
+    return null;
+  }
+
+  let bodyFatPct = 0;
+  if (gender.toLowerCase() === 'female') {
+    if (W + Hip - N <= 0) return null;
+    bodyFatPct =
+      495 / (1.29579 - 0.35004 * Math.log10(W + Hip - N) + 0.22100 * Math.log10(H)) - 450;
+  } else {
+    if (W - N <= 0) return null;
+    bodyFatPct =
+      495 / (1.0324 - 0.19077 * Math.log10(W - N) + 0.15456 * Math.log10(H)) - 450;
+  }
+
+  bodyFatPct = Math.max(2, Math.min(65, bodyFatPct));
+
+  // Category determination
+  let category = 'Normal';
+  if (gender.toLowerCase() === 'female') {
+    if (bodyFatPct < 14) category = 'Essential Fat';
+    else if (bodyFatPct < 21) category = 'Athletes';
+    else if (bodyFatPct < 25) category = 'Fitness';
+    else if (bodyFatPct < 32) category = 'Average';
+    else category = 'Obese';
+  } else {
+    if (bodyFatPct < 6) category = 'Essential Fat';
+    else if (bodyFatPct < 14) category = 'Athletes';
+    else if (bodyFatPct < 18) category = 'Fitness';
+    else if (bodyFatPct < 25) category = 'Average';
+    else category = 'Obese';
+  }
+
+  return {
+    bodyFatPercentage: +bodyFatPct.toFixed(1),
+    category,
+    fatMassPercentage: +bodyFatPct.toFixed(1),
+    leanMassPercentage: +(100 - bodyFatPct).toFixed(1),
+  };
+};
+
+// 23. Pregnancy Due Date Calculator (Naegele's Rule: LMP + 280 Days)
+export const calculatePregnancyDueDateLogic = (lmpDateString) => {
+  if (!lmpDateString) return null;
+  const lmp = new Date(lmpDateString);
+  if (isNaN(lmp.getTime())) return null;
+
+  // Add 280 days (40 weeks)
+  const dueDate = new Date(lmp);
+  dueDate.setDate(dueDate.getDate() + 280);
+
+  const today = new Date();
+  const diffMs = today.getTime() - lmp.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const currentWeeks = Math.max(0, Math.floor(diffDays / 7));
+  const currentDaysRem = Math.max(0, diffDays % 7);
+
+  const daysRemaining = Math.max(0, 280 - diffDays);
+
+  let trimester = 'First Trimester (Weeks 1-12)';
+  if (currentWeeks >= 27) {
+    trimester = 'Third Trimester (Weeks 27-40)';
+  } else if (currentWeeks >= 13) {
+    trimester = 'Second Trimester (Weeks 13-26)';
+  }
+
+  return {
+    dueDate: dueDate.toISOString().split('T')[0],
+    dueDateFormatted: dueDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    currentWeeks,
+    currentDays: currentDaysRem,
+    daysRemaining,
+    trimester,
+  };
+};
+
+// 24. Water Intake Calculator
+export const calculateWaterIntakeLogic = (weightKg, activityMinutes = 30) => {
+  const W = parseFloat(weightKg);
+  const act = parseFloat(activityMinutes) || 0;
+
+  if (isNaN(W) || W <= 0) return null;
+
+  // Base requirement: 35ml per kg of body weight
+  const baseMl = W * 35;
+  // Exercise extra: 350ml for every 30 minutes of activity
+  const exerciseMl = (act / 30) * 350;
+  const totalMl = baseMl + exerciseMl;
+  const totalLiters = totalMl / 1000;
+  const totalGlasses = Math.round(totalMl / 250); // 250ml per glass
+
+  return {
+    weightKg: W,
+    activityMinutes: act,
+    litersPerDay: +totalLiters.toFixed(2),
+    millilitersPerDay: Math.round(totalMl),
+    glassesPerDay: totalGlasses,
+  };
+};
+
+// 25. Sleep Calculator (90-Minute Sleep Cycles & 15m Fall-Asleep Latency)
+export const calculateSleepLogic = (timeString = '07:00', mode = 'wake') => {
+  // mode: 'wake' => calculate when to sleep to wake up at timeString
+  // mode: 'bed' => calculate when to wake up if going to bed at timeString
+  if (!timeString) return null;
+
+  const [hours, minutes] = timeString.split(':').map((v) => parseInt(v, 10));
+  if (isNaN(hours) || isNaN(minutes)) return null;
+
+  const targetDate = new Date();
+  targetDate.setHours(hours, minutes, 0, 0);
+
+  const cycleMinutes = 90;
+  const latencyMinutes = 15;
+
+  const cycles = [6, 5, 4, 3]; // 9 hrs, 7.5 hrs, 6 hrs, 4.5 hrs
+  const suggestions = cycles.map((c) => {
+    const calcDate = new Date(targetDate);
+    if (mode === 'wake') {
+      // Subtract (c * 90m + 15m)
+      calcDate.setMinutes(calcDate.getMinutes() - (c * cycleMinutes + latencyMinutes));
+    } else {
+      // Add 15m + (c * 90m)
+      calcDate.setMinutes(calcDate.getMinutes() + (latencyMinutes + c * cycleMinutes));
+    }
+
+    const timeStr = calcDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    return {
+      cycles: c,
+      hours: (c * 1.5).toFixed(1),
+      time: timeStr,
+      isRecommended: c === 5,
+    };
+  });
+
+  return {
+    targetTime: timeString,
+    mode,
+    suggestions,
+  };
+};
+
+// 26. Target Heart Rate Calculator (Karvonen & Haskell-Fox Formulas)
+export const calculateTargetHeartRateLogic = (age, restingHeartRate = 70) => {
+  const A = parseFloat(age);
+  const RHR = parseFloat(restingHeartRate) || 70;
+
+  if (isNaN(A) || A <= 0 || A > 120) return null;
+
+  const maxHeartRate = 220 - A;
+  const hrr = Math.max(0, maxHeartRate - RHR);
+
+  const zone1Min = Math.round(RHR + hrr * 0.50);
+  const zone1Max = Math.round(RHR + hrr * 0.60);
+
+  const zone2Min = Math.round(RHR + hrr * 0.60);
+  const zone2Max = Math.round(RHR + hrr * 0.70);
+
+  const zone3Min = Math.round(RHR + hrr * 0.70);
+  const zone3Max = Math.round(RHR + hrr * 0.80);
+
+  const zone4Min = Math.round(RHR + hrr * 0.80);
+  const zone4Max = Math.round(RHR + hrr * 0.90);
+
+  const zone5Min = Math.round(RHR + hrr * 0.90);
+  const zone5Max = maxHeartRate;
+
+  return {
+    age: A,
+    restingHeartRate: RHR,
+    maxHeartRate,
+    zone1: { name: 'Warm Up / Recovery (50-60%)', range: `${zone1Min} - ${zone1Max} bpm` },
+    zone2: { name: 'Fat Burn / Base Endurance (60-70%)', range: `${zone2Min} - ${zone2Max} bpm`, isHighlight: true },
+    zone3: { name: 'Aerobic / Cardio (70-80%)', range: `${zone3Min} - ${zone3Max} bpm` },
+    zone4: { name: 'Anaerobic / Threshold (80-90%)', range: `${zone4Min} - ${zone4Max} bpm` },
+    zone5: { name: 'VO2 Max / Redline (90-100%)', range: `${zone5Min} - ${zone5Max} bpm` },
+  };
+};

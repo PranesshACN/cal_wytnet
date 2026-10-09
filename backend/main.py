@@ -298,6 +298,47 @@ class BudgetRequest(BaseModel):
     savings_amount: float = 0.0
 
 
+class CalorieRequest(BaseModel):
+    age: float
+    gender: str = "male"
+    weight: float
+    height: float
+    activity_level: str = "moderate"
+
+
+class IdealWeightRequest(BaseModel):
+    height: float
+    gender: str = "male"
+
+
+class BodyFatRequest(BaseModel):
+    gender: str = "male"
+    height: float
+    waist: float
+    neck: float
+    hip: float = 0.0
+
+
+class PregnancyDueDateRequest(BaseModel):
+    lmp_date: str
+
+
+class WaterIntakeRequest(BaseModel):
+    weight: float
+    activity_minutes: float = 30.0
+
+
+class SleepRequest(BaseModel):
+    target_time: str = "07:00"
+    mode: str = "wake"
+
+
+class TargetHeartRateRequest(BaseModel):
+    age: float
+    resting_heart_rate: float = 70.0
+
+
+
 
 # FastAPI App
 app = FastAPI(
@@ -1114,7 +1155,142 @@ async def calculate_budget(req: BudgetRequest, current_user: User = Depends(get_
     }
 
 
+# Health & Fitness Endpoints
+@app.post("/calculate/calorie")
+async def calculate_calorie(req: CalorieRequest, current_user: User = Depends(get_current_user)):
+    bmr = 10 * req.weight + 6.25 * req.height - 5 * req.age
+    if req.gender.lower() == "female":
+        bmr -= 161
+    else:
+        bmr += 5
+    multipliers = {
+        "sedentary": 1.2,
+        "light": 1.375,
+        "moderate": 1.55,
+        "active": 1.725,
+        "very_active": 1.9
+    }
+    mult = multipliers.get(req.activity_level.lower(), 1.55)
+    maintenance = round(bmr * mult)
+    return {
+        "bmr": round(bmr),
+        "maintenance_calories": maintenance,
+        "mild_weight_loss": maintenance - 250,
+        "weight_loss": maintenance - 500,
+        "mild_weight_gain": maintenance + 250,
+        "weight_gain": maintenance + 500,
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/ideal-weight")
+async def calculate_ideal_weight(req: IdealWeightRequest, current_user: User = Depends(get_current_user)):
+    inches = max(0.0, (req.height / 2.54) - 60)
+    devine = 45.5 + 2.3 * inches if req.gender.lower() == "female" else 50.0 + 2.3 * inches
+    hm = req.height / 100
+    min_bmi_wt = 18.5 * (hm ** 2)
+    max_bmi_wt = 24.9 * (hm ** 2)
+    return {
+        "height_cm": round(req.height, 1),
+        "ideal_weight_kg": round(devine, 1),
+        "min_healthy_weight_kg": round(min_bmi_wt, 1),
+        "max_healthy_weight_kg": round(max_bmi_wt, 1),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/body-fat")
+async def calculate_body_fat(req: BodyFatRequest, current_user: User = Depends(get_current_user)):
+    import math
+    if req.gender.lower() == "female":
+        val = req.waist + req.hip - req.neck
+        bf = 495 / (1.29579 - 0.35004 * math.log10(val) + 0.22100 * math.log10(req.height)) - 450 if (val > 0 and req.height > 0) else 0
+    else:
+        val = req.waist - req.neck
+        bf = 495 / (1.0324 - 0.19077 * math.log10(val) + 0.15456 * math.log10(req.height)) - 450 if (val > 0 and req.height > 0) else 0
+    bf = max(2.0, min(65.0, bf))
+    return {
+        "body_fat_percentage": round(bf, 1),
+        "lean_mass_percentage": round(100.0 - bf, 1),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/pregnancy-due-date")
+async def calculate_pregnancy_due_date(req: PregnancyDueDateRequest, current_user: User = Depends(get_current_user)):
+    from datetime import datetime, timedelta
+    try:
+        lmp = datetime.strptime(req.lmp_date, "%Y-%m-%d")
+        due_date = lmp + timedelta(days=280)
+        today = datetime.now()
+        diff = (today - lmp).days
+        weeks = max(0, diff // 7)
+        days = max(0, diff % 7)
+        rem = max(0, 280 - diff)
+        return {
+            "due_date": due_date.strftime("%Y-%m-%d"),
+            "current_gestation": f"{weeks} weeks, {days} days",
+            "days_remaining": rem,
+            "user_sub": current_user.sub
+        }
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+
+@app.post("/calculate/water-intake")
+async def calculate_water_intake(req: WaterIntakeRequest, current_user: User = Depends(get_current_user)):
+    base_ml = req.weight * 35
+    act_ml = (req.activity_minutes / 30) * 350
+    tot_ml = base_ml + act_ml
+    return {
+        "liters_per_day": round(tot_ml / 1000, 2),
+        "milliliters_per_day": round(tot_ml),
+        "glasses_per_day": round(tot_ml / 250),
+        "user_sub": current_user.sub
+    }
+
+
+@app.post("/calculate/sleep")
+async def calculate_sleep(req: SleepRequest, current_user: User = Depends(get_current_user)):
+    from datetime import datetime, timedelta
+    try:
+        t = datetime.strptime(req.target_time, "%H:%M")
+        suggestions = []
+        for cycles in [6, 5, 4, 3]:
+            mins = cycles * 90 + 15
+            calc_t = (t - timedelta(minutes=mins)) if req.mode == "wake" else (t + timedelta(minutes=mins))
+            suggestions.append({
+                "cycles": cycles,
+                "hours": cycles * 1.5,
+                "time": calc_t.strftime("%I:%M %p"),
+                "is_recommended": cycles == 5
+            })
+        return {
+            "target_time": req.target_time,
+            "mode": req.mode,
+            "suggestions": suggestions,
+            "user_sub": current_user.sub
+        }
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid time format. Use HH:MM")
+
+
+@app.post("/calculate/target-heart-rate")
+async def calculate_target_heart_rate(req: TargetHeartRateRequest, current_user: User = Depends(get_current_user)):
+    mhr = 220 - req.age
+    hrr = max(0.0, mhr - req.resting_heart_rate)
+    return {
+        "max_heart_rate": round(mhr),
+        "resting_heart_rate": round(req.resting_heart_rate),
+        "fat_burn_zone": f"{round(req.resting_heart_rate + hrr * 0.60)} - {round(req.resting_heart_rate + hrr * 0.70)} bpm",
+        "cardio_zone": f"{round(req.resting_heart_rate + hrr * 0.70)} - {round(req.resting_heart_rate + hrr * 0.80)} bpm",
+        "peak_zone": f"{round(req.resting_heart_rate + hrr * 0.80)} - {round(mhr)} bpm",
+        "user_sub": current_user.sub
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
