@@ -4,6 +4,7 @@ All local credential storage and local verification have been completely removed
 Identity, registration, password lifecycle, and tokens are delegated to WytNet.
 """
 import os
+import re
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
@@ -39,12 +40,13 @@ if DATABASE_URL == "sqlite:///./calculator.db":
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Ensure IPv4 connection pooler is used for Supabase to prevent IPv6 DNS failures
-if "db.ekaileporclbujbfxfos.supabase.co" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgres:Pranessh123@db.ekaileporclbujbfxfos.supabase.co:5432",
-        "postgres.ekaileporclbujbfxfos:Pranessh123@aws-0-ap-northeast-2.pooler.supabase.com:5432"
-    )
+# Ensure IPv4 connection pooler is used for Supabase to prevent IPv6 DNS failures on Vercel/serverless
+if "supabase.co" in DATABASE_URL and "pooler.supabase.com" not in DATABASE_URL:
+    m = re.match(r"(postgresql(?:\+psycopg2)?):\/\/([^:]+):([^@]+)@db\.([^\.]+)\.supabase\.co(?::\d+)?\/(.+)", DATABASE_URL)
+    if m:
+        proto, user, password, ref, dbname = m.groups()
+        pooler_user = user if user.endswith(f".{ref}") else f"postgres.{ref}"
+        DATABASE_URL = f"{proto}://{pooler_user}:{password}@aws-0-ap-northeast-2.pooler.supabase.com:5432/{dbname}"
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kalzy.vercel.app")
 IS_PROD = ENVIRONMENT.lower() == "production"
@@ -78,7 +80,10 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as ex:
+    logger.warning("Base.metadata.create_all deferred: %s", ex)
 
 
 # Pydantic Schemas
