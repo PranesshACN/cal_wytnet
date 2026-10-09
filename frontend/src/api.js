@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.kalzy.vercel.app';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://apikalzy.vercel.app';
 
 // WytPass Public Client Configuration (Safe for Frontend/SPA)
 export const WYTPASS_CONFIG = {
