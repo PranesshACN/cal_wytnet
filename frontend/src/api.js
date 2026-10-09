@@ -1,14 +1,35 @@
 import axios from 'axios';
 
-const isLocalhost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.hostname === '');
+const resolveApiBaseUrl = () => {
+  let envUrl = (process.env.REACT_APP_API_URL || '').trim();
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  (isLocalhost ? 'http://localhost:8000' : 'https://apikalzy.vercel.app');
+  if (envUrl) {
+    // Correct common typos such as .com instead of .app
+    if (envUrl.includes('apikalzy.vercel.com')) {
+      envUrl = envUrl.replace('apikalzy.vercel.com', 'apikalzy.vercel.app');
+    }
+    // Guarantee protocol is present so Axios does not treat as relative URL
+    if (!envUrl.startsWith('http://') && !envUrl.startsWith('https://')) {
+      envUrl = `https://${envUrl}`;
+    }
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  // Local development
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '')
+  ) {
+    return 'http://localhost:8000';
+  }
+
+  // Production Vercel backend
+  return 'https://apikalzy.vercel.app';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 // WytPass Public Client Configuration (Safe for Frontend/SPA)
 export const WYTPASS_CONFIG = {
