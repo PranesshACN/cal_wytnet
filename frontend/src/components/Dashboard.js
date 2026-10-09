@@ -100,6 +100,8 @@ import {
   HeartPulse,
   Search,
   X,
+  Copy,
+  Check,
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -109,6 +111,21 @@ function Dashboard({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState(searchParams.get('tool') || 'emi');
   const [syncedStatus, setSyncedStatus] = useState(null);
   const [toolSearch, setToolSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [copied, setCopied] = useState(false);
+
+  // Keyboard shortcut: Cmd+K / Ctrl+K to focus tool search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const input = document.getElementById('kalzy-tool-search-input');
+        if (input) input.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Sync activeTab with URL tool parameter
   useEffect(() => {
@@ -757,7 +774,31 @@ function Dashboard({ token, onLogout }) {
   const allTabs = [...financeTabs, ...investmentTabs, ...taxSalaryTabs, ...healthTabs, ...utilityTabs];
   const activeTabMeta = allTabs.find((t) => t.id === activeTab) || financeTabs[0];
 
-  const filterTabs = (tabs) => {
+  const handleCopySummary = () => {
+    let summaryText = `${activeTabMeta.label} Summary\n`;
+    if (activeTab === 'emi' && emiResult) {
+      summaryText += `Monthly EMI: ₹${emiResult.monthlyEmi.toLocaleString('en-IN')}\nPrincipal: ₹${emiResult.principal.toLocaleString('en-IN')}\nTotal Interest: ₹${emiResult.totalInterest.toLocaleString('en-IN')}\nTotal Payable: ₹${emiResult.totalPayment.toLocaleString('en-IN')}`;
+    } else if (activeTab === 'bmi' && bmiResult) {
+      summaryText += `BMI: ${bmiResult.bmi} (${bmiResult.category})\nHealthy Range: ${bmiResult.minNormalWeight} - ${bmiResult.maxNormalWeight} kg`;
+    } else if (activeTab === 'calorie' && calResult) {
+      summaryText += `Maintenance Calories (TDEE): ${calResult.maintenanceCalories} kcal/day\nBMR: ${calResult.bmr} kcal`;
+    } else if (activeTab === 'sip' && sipResult) {
+      summaryText += `Total Value: ₹${sipResult.totalValue.toLocaleString('en-IN')}\nInvested: ₹${sipResult.totalInvested.toLocaleString('en-IN')}\nReturns: ₹${sipResult.estimatedReturns.toLocaleString('en-IN')}`;
+    } else {
+      summaryText += `Calculated on Kalzy (kalzy.vercel.app)`;
+    }
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(summaryText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const filterTabs = (tabs, categoryKey) => {
+    if (categoryFilter !== 'all' && categoryFilter !== categoryKey) {
+      return [];
+    }
     if (!toolSearch.trim()) return tabs;
     const q = toolSearch.toLowerCase().trim();
     return tabs.filter(
@@ -768,11 +809,11 @@ function Dashboard({ token, onLogout }) {
     );
   };
 
-  const filteredFinanceTabs = filterTabs(financeTabs);
-  const filteredInvestmentTabs = filterTabs(investmentTabs);
-  const filteredTaxSalaryTabs = filterTabs(taxSalaryTabs);
-  const filteredHealthTabs = filterTabs(healthTabs);
-  const filteredUtilityTabs = filterTabs(utilityTabs);
+  const filteredFinanceTabs = filterTabs(financeTabs, 'finance');
+  const filteredInvestmentTabs = filterTabs(investmentTabs, 'investment');
+  const filteredTaxSalaryTabs = filterTabs(taxSalaryTabs, 'tax');
+  const filteredHealthTabs = filterTabs(healthTabs, 'health');
+  const filteredUtilityTabs = filterTabs(utilityTabs, 'utility');
 
   const totalFilteredCount =
     filteredFinanceTabs.length +
@@ -845,12 +886,14 @@ function Dashboard({ token, onLogout }) {
             <div className="sidebar-search-box">
               <Search size={15} className="sidebar-search-icon" />
               <input
+                id="kalzy-tool-search-input"
                 type="text"
                 value={toolSearch}
                 onChange={(e) => setToolSearch(e.target.value)}
-                placeholder="Search calculators..."
+                placeholder="Search calculators (⌘K)..."
                 className="sidebar-search-input"
               />
+              <span className="search-kbd-hint">⌘K</span>
               {toolSearch && (
                 <button
                   type="button"
@@ -862,6 +905,27 @@ function Dashboard({ token, onLogout }) {
                   <X size={13} />
                 </button>
               )}
+            </div>
+
+            {/* Quick Category Filter Pills */}
+            <div className="sidebar-filter-pills-row">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'finance', label: 'Finance' },
+                { id: 'investment', label: 'Invest' },
+                { id: 'tax', label: 'Tax' },
+                { id: 'health', label: 'Health' },
+                { id: 'utility', label: 'Utils' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`filter-pill-btn ${categoryFilter === cat.id ? 'active' : ''}`}
+                  onClick={() => setCategoryFilter(cat.id)}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1061,16 +1125,37 @@ function Dashboard({ token, onLogout }) {
           {/* Top Bar */}
           <div className="workspace-top-header">
             <div className="workspace-title-meta">
-              <h2 className="active-calc-title">{activeTabMeta.label}</h2>
-              <span className="live-active-pill">
-                <span className="live-pulse-dot" /> Live calculation active
-              </span>
+              <div className="workspace-breadcrumb">
+                <span className="breadcrumb-tag">{activeTabMeta.tag}</span>
+              </div>
+              <div className="title-row-with-pill">
+                <h2 className="active-calc-title">{activeTabMeta.label}</h2>
+                <span className="live-active-pill">
+                  <span className="live-pulse-dot" /> Live calculation active
+                </span>
+              </div>
             </div>
 
-            <button type="button" className="action-reset-btn" onClick={handleReset}>
-              <RotateCcw size={14} />
-              <span>Reset Values</span>
-            </button>
+            <div className="workspace-header-actions">
+              <button
+                type="button"
+                className="action-copy-btn"
+                onClick={handleCopySummary}
+                title="Copy calculation summary"
+              >
+                {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
+                <span>{copied ? 'Copied!' : 'Copy Summary'}</span>
+              </button>
+              <button
+                type="button"
+                className="action-reset-btn"
+                onClick={handleReset}
+                title="Reset values to default"
+              >
+                <RotateCcw size={14} />
+                <span>Reset Values</span>
+              </button>
+            </div>
           </div>
 
           {/* Tool Panels */}
@@ -1206,6 +1291,29 @@ function Dashboard({ token, onLogout }) {
                         <div className="metric-stat-box">
                           <span className="stat-box-label">Interest Ratio</span>
                           <span className="stat-box-val">{emiResult.interestRatio}%</span>
+                        </div>
+                      </div>
+
+                      <div className="visual-breakdown-card">
+                        <div className="breakdown-track">
+                          <div
+                            className="breakdown-fill fill-principal"
+                            style={{ width: `${Math.max(5, 100 - emiResult.interestRatio)}%` }}
+                            title={`Principal: ${100 - emiResult.interestRatio}%`}
+                          />
+                          <div
+                            className="breakdown-fill fill-interest"
+                            style={{ width: `${Math.max(5, emiResult.interestRatio)}%` }}
+                            title={`Interest: ${emiResult.interestRatio}%`}
+                          />
+                        </div>
+                        <div className="breakdown-legend">
+                          <span className="legend-tag">
+                            <span className="legend-dot dot-principal" /> Principal (₹{emiResult.principal.toLocaleString('en-IN')})
+                          </span>
+                          <span className="legend-tag">
+                            <span className="legend-dot dot-interest" /> Interest (₹{emiResult.totalInterest.toLocaleString('en-IN')})
+                          </span>
                         </div>
                       </div>
                     </>
