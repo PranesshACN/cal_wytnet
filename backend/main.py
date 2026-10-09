@@ -6,6 +6,7 @@ Identity, registration, password lifecycle, and tokens are delegated to WytNet.
 import os
 import re
 import logging
+import traceback
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Response, Form
@@ -33,6 +34,8 @@ from wytnet_client import (
 logger = logging.getLogger("calculator_api")
 logging.basicConfig(level=logging.INFO)
 
+_startup_error = None
+
 # Database Setup
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'calculator.db')}")
 if DATABASE_URL == "sqlite:///./calculator.db":
@@ -58,8 +61,16 @@ else:
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_recycle"] = 300
 
-engine = create_engine(DATABASE_URL, **engine_kwargs)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+try:
+    engine = create_engine(DATABASE_URL, **engine_kwargs)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+except Exception as e:
+    _startup_error = traceback.format_exc()
+    logger.error("Error initializing database engine: %s", _startup_error)
+    # Fail-safe memory engine so module import never crashes serverless functions
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
 
@@ -305,7 +316,20 @@ def read_root():
     return {
         "message": "Calculator API is running with WytNet Centralized Identity",
         "auth_provider": "WytNet (WytPass IdP)",
-        "version": "2.0.0"
+        "version": "2.0.0",
+        "status": "healthy" if not _startup_error else "degraded",
+        "startup_error": _startup_error
+    }
+
+
+@app.get("/api/debug")
+def read_debug():
+    return {
+        "database_url_configured": bool(os.getenv("DATABASE_URL")),
+        "database_host": DATABASE_URL.split("@")[-1].split("/")[0] if "@" in DATABASE_URL else "local_sqlite",
+        "environment": ENVIRONMENT,
+        "is_prod": IS_PROD,
+        "startup_error": _startup_error
     }
 
 
