@@ -6,8 +6,9 @@ Direct authentication, Registration, and Password lifecycle.
 import os
 import time
 import uuid
+import asyncio
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 import httpx
 from fastapi import HTTPException, status
 from jose import jwt, jwk, JWTError
@@ -79,6 +80,8 @@ class WytNetClient:
         self.client_secret = WYTPASS_CLIENT_SECRET
         self.issuer = WYTNET_ISSUER
         self.timeout = httpx.Timeout(12.0, connect=6.0)
+        self._exchange_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+        self._exchange_locks: Dict[str, asyncio.Lock] = {}
 
     def _generate_dev_mock_user(self, email: str, name: Optional[str] = None) -> Dict[str, Any]:
         """Provides a safe, compliant simulation payload when the test sandbox is 503"""
@@ -281,46 +284,70 @@ class WytNetClient:
         """
         Flow B: OAuth 2.0 PKCE Authorization Code Exchange
         POST /oauth/token (application/x-www-form-urlencoded)
+        Protected with deduplication lock and cache to handle React StrictMode / concurrent retries.
         """
-        data = {
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": redirect_uri,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "code_verifier": code_verifier
-        }
+        now = time.time()
+        # Evict cache entries older than 60 seconds
+        expired_keys = [k for k, (ts, _) in self._exchange_cache.items() if now - ts > 60]
+        for k in expired_keys:
+            self._exchange_cache.pop(k, None)
 
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                res = await client.post(
-                    TOKEN_URL,
-                    data=data,
-                    headers={"Content-Type": "application/x-www-form-urlencoded"}
-                )
+        if code in self._exchange_cache:
+            logger.info("Serving cached token response for authorization code '%s...'", code[:12])
+            return self._exchange_cache[code][1]
 
-                if res.status_code == 200:
-                    token_data = res.json()
-                    # If userinfo is not included in token response, fetch it
-                    if "user" not in token_data and "access_token" in token_data:
-                        userinfo = await self.get_userinfo(token_data["access_token"])
-                        token_data["user"] = userinfo
-                    return token_data
+        # Lock per authorization code to prevent simultaneous duplicate requests to WytNet
+        lock = self._exchange_locks.setdefault(code, asyncio.Lock())
+        async with lock:
+            if code in self._exchange_cache:
+                return self._exchange_cache[code][1]
 
-                if res.status_code == 429:
-                    raise HTTPException(status_code=429, detail="Too many code exchange requests.")
+            data = {
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "code_verifier": code_verifier
+            }
 
-                if res.status_code == 503 and DEV_FALLBACK_ON_503:
-                    logger.warning("WytNet returned 503 for code exchange. Providing dev simulated exchange.")
-                    return self._generate_dev_mock_user("sso_user@wytnet.dev", name="WytPass SSO User")
+            try:
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    res = await client.post(
+                        TOKEN_URL,
+                        data=data,
+                        headers={"Content-Type": "application/x-www-form-urlencoded"}
+                    )
 
-                err_detail = res.text or "OAuth code exchange failed"
-                raise HTTPException(status_code=res.status_code, detail=f"Token exchange error: {err_detail}")
+                    if res.status_code == 200:
+                        token_data = res.json()
+                        # If userinfo is not included in token response, fetch it
+                        if "user" not in token_data and "access_token" in token_data:
+                            userinfo = await self.get_userinfo(token_data["access_token"])
+                            token_data["user"] = userinfo
+                        self._exchange_cache[code] = (time.time(), token_data)
+                        return token_data
 
-        except httpx.RequestError as ex:
-            if DEV_FALLBACK_ON_503:
-                return self._generate_dev_mock_user("sso_user@wytnet.dev", name="WytPass SSO User")
-            raise HTTPException(status_code=503, detail="WytNet token exchange service unreachable")
+                    if res.status_code == 429:
+                        raise HTTPException(status_code=429, detail="Too many code exchange requests.")
+
+                    if res.status_code == 503 and DEV_FALLBACK_ON_503:
+                        logger.warning("WytNet returned 503 for code exchange. Providing dev simulated exchange.")
+                        sim_data = self._generate_dev_mock_user("sso_user@wytnet.dev", name="WytPass SSO User")
+                        self._exchange_cache[code] = (time.time(), sim_data)
+                        return sim_data
+
+                    err_detail = res.text or "OAuth code exchange failed"
+                    raise HTTPException(status_code=res.status_code, detail=f"Token exchange error: {err_detail}")
+
+            except httpx.RequestError as ex:
+                if DEV_FALLBACK_ON_503:
+                    sim_data = self._generate_dev_mock_user("sso_user@wytnet.dev", name="WytPass SSO User")
+                    self._exchange_cache[code] = (time.time(), sim_data)
+                    return sim_data
+                raise HTTPException(status_code=503, detail="WytNet token exchange service unreachable")
+            finally:
+                self._exchange_locks.pop(code, None)
 
     async def refresh_access_token(self, refresh_token: str) -> Dict[str, Any]:
         """

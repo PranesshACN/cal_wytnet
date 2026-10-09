@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://apikalzy.vercel.app';
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '');
+
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  (isLocalhost ? 'http://localhost:8000' : 'https://apikalzy.vercel.app');
 
 // WytPass Public Client Configuration (Safe for Frontend/SPA)
 export const WYTPASS_CONFIG = {
@@ -80,10 +88,12 @@ export const wytpassLoginUrl = async () => {
   // 1. Generate cryptographic code_verifier
   const verifier = generateRandomString(48);
   sessionStorage.setItem('pkce_verifier', verifier);
+  localStorage.setItem('pkce_verifier', verifier);
 
   // 2. Generate random state for CSRF protection
   const state = generateRandomString(24);
   sessionStorage.setItem('oauth_state', state);
+  localStorage.setItem('oauth_state', state);
 
   // 3. Compute code_challenge = BASE64URL(SHA256(code_verifier))
   const encoder = new TextEncoder();
@@ -106,13 +116,41 @@ export const wytpassLoginUrl = async () => {
 };
 
 // FLOW B: Exchange Authorization Code via Backend Proxy
+let inFlightExchange = null;
+let lastExchangedCode = null;
+let lastExchangeResult = null;
+
 export const exchangeWytpassToken = async (code, verifier) => {
-  const response = await api.post('/api/auth/wytpass/token', {
-    code,
-    code_verifier: verifier,
-    redirect_uri: WYTPASS_CONFIG.redirectUri,
-  });
-  return response.data;
+  // If recently exchanged with this code and succeeded, reuse result
+  if (lastExchangedCode === code && lastExchangeResult) {
+    return lastExchangeResult;
+  }
+
+  // If request for this code is already in flight, reuse the promise
+  if (inFlightExchange && inFlightExchange.code === code) {
+    return inFlightExchange.promise;
+  }
+
+  const exchangePromise = (async () => {
+    try {
+      const response = await api.post('/api/auth/wytpass/token', {
+        code,
+        code_verifier: verifier,
+        redirect_uri: WYTPASS_CONFIG.redirectUri,
+      });
+      lastExchangedCode = code;
+      lastExchangeResult = response.data;
+      if (response.data?.access_token) {
+        localStorage.setItem('token', response.data.access_token);
+      }
+      return response.data;
+    } finally {
+      inFlightExchange = null;
+    }
+  })();
+
+  inFlightExchange = { code, promise: exchangePromise };
+  return exchangePromise;
 };
 
 // Logout / Revoke Token

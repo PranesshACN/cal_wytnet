@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { exchangeWytpassToken } from '../api';
 import { Shield, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -8,33 +8,37 @@ function AuthCallback({ setToken }) {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [statusMessage, setStatusMessage] = useState('Verifying authorization with WytPass...');
+  const hasExecutedRef = useRef(false);
 
   useEffect(() => {
-    let isMounted = true;
+    const existingToken = localStorage.getItem('token');
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    const errorParam = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    if (errorParam) {
+      setError(errorDescription || `WytPass authentication error: ${errorParam}`);
+      return;
+    }
+
+    if (!code) {
+      if (existingToken) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+      return;
+    }
+
+    // Guard against React 18 StrictMode double-invocation
+    if (hasExecutedRef.current) return;
+    hasExecutedRef.current = true;
 
     const handleCallback = async () => {
-      const code = searchParams.get('code');
-      const state = searchParams.get('state');
-      const errorParam = searchParams.get('error');
-      const errorDescription = searchParams.get('error_description');
-
-      if (errorParam) {
-        if (isMounted) {
-          setError(errorDescription || `WytPass authentication error: ${errorParam}`);
-        }
-        return;
-      }
-
-      if (!code) {
-        if (isMounted) {
-          navigate('/login');
-        }
-        return;
-      }
-
       try {
         // 1. Verify CSRF State
-        const savedState = sessionStorage.getItem('oauth_state');
+        const savedState = sessionStorage.getItem('oauth_state') || localStorage.getItem('oauth_state');
         if (savedState && state && savedState !== state) {
           throw new Error('State mismatch detected. Potential CSRF security violation.');
         }
@@ -42,37 +46,42 @@ function AuthCallback({ setToken }) {
         // 2. Retrieve cryptographic PKCE verifier
         const verifier = sessionStorage.getItem('pkce_verifier') || localStorage.getItem('pkce_verifier');
         if (!verifier) {
-          throw new Error('PKCE code verifier not found in session storage.');
+          if (existingToken) {
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+          throw new Error('PKCE code verifier not found. Please click "Return to Login" to sign in again.');
         }
 
         setStatusMessage('Exchanging authorization code for secure session tokens...');
 
-        // 3. Exchange authorization code with backend proxy (which holds client_secret)
+        // 3. Exchange authorization code with backend proxy
         const data = await exchangeWytpassToken(code, verifier);
 
         // 4. Cleanup temporary storage
         sessionStorage.removeItem('pkce_verifier');
         sessionStorage.removeItem('oauth_state');
         localStorage.removeItem('pkce_verifier');
+        localStorage.removeItem('oauth_state');
 
-        if (isMounted) {
+        if (data?.access_token) {
           setToken(data.access_token);
-          navigate('/dashboard');
+          localStorage.setItem('token', data.access_token);
+          navigate('/dashboard', { replace: true });
         }
       } catch (err) {
         console.error('WytPass Callback Error:', err);
-        if (isMounted) {
-          const detail = err.response?.data?.detail || err.message || 'Failed to complete WytPass authentication.';
-          setError(detail);
+        // If a valid token is present from a concurrent exchange, navigate gracefully
+        if (localStorage.getItem('token')) {
+          navigate('/dashboard', { replace: true });
+          return;
         }
+        const detail = err.response?.data?.detail || err.message || 'Failed to complete WytPass authentication.';
+        setError(detail);
       }
     };
 
     handleCallback();
-
-    return () => {
-      isMounted = false;
-    };
   }, [searchParams, setToken, navigate]);
 
   return (
