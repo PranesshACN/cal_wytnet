@@ -126,7 +126,7 @@ function Dashboard({ token, onLogout }) {
         <div className="dashboard-brand-col">
           <div className="brand-badge">
             <span className="brand-sparkle">✦</span>
-            <span>Calculator<span className="brand-suite-tag">Suite</span></span>
+            <span className="brand-suite-tag">Kalzy</span>
           </div>
 
           <div className="identity-meta-row">
@@ -145,7 +145,7 @@ function Dashboard({ token, onLogout }) {
 
         <div className="dashboard-actions-col">
           <Link to="/" className="nav-overview-btn">
-            ← Suite Overview
+            ← Kalzy Overview
           </Link>
 
           {user && (

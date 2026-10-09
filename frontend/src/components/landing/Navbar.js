@@ -35,7 +35,7 @@ function Navbar({ token }) {
         {/* Brand Logo (Trovix Style) */}
         <Link to="/" className="brand-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <span className="logo-sparkle-mark">✦</span>
-          <span className="brand-title">Calculator<span className="brand-accent">Suite</span></span>
+          <span className="brand-title">Kal<span className="brand-accent">zy</span></span>
         </Link>
 
         {/* Center Nav Links */}
@@ -45,9 +45,6 @@ function Navbar({ token }) {
           </button>
           <button type="button" className="nav-link-btn" onClick={() => scrollToSection('calculators')}>
             Calculators
-          </button>
-          <button type="button" className="nav-link-btn" onClick={() => scrollToSection('interactive-preview')}>
-            Live Demo
           </button>
           <button type="button" className="nav-link-btn" onClick={() => scrollToSection('features')}>
             Features
@@ -95,9 +92,6 @@ function Navbar({ token }) {
             </button>
             <button type="button" className="mobile-nav-link" onClick={() => scrollToSection('calculators')}>
               Calculators
-            </button>
-            <button type="button" className="mobile-nav-link" onClick={() => scrollToSection('interactive-preview')}>
-              Live Preview
             </button>
             <button type="button" className="mobile-nav-link" onClick={() => scrollToSection('features')}>
               Features

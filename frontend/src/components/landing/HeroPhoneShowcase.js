@@ -13,7 +13,7 @@ import {
 
 function HeroPhoneShowcase() {
   return (
-    <div className="trovix-phone-composition-wrapper" aria-label="Calculator Suite Interactive Mobile Showcase">
+    <div className="trovix-phone-composition-wrapper" aria-label="Kalzy Interactive Mobile Showcase">
       {/* Background ambient lighting */}
       <div className="trovix-center-glow" />
 
@@ -150,7 +150,7 @@ function HeroPhoneShowcase() {
                     </div>
                     <div className="phone-user-meta">
                       <span className="phone-username">Ahmad Gouse</span>
-                      <span className="phone-user-status">Verified Suite User</span>
+                      <span className="phone-user-status">Verified Kalzy User</span>
                     </div>
                   </div>
                   <div className="phone-notif-bell">
@@ -161,7 +161,7 @@ function HeroPhoneShowcase() {
 
                 {/* In-Phone Mini Widget Card */}
                 <div className="phone-calc-hero-card">
-                  <span className="phone-widget-tag">Quick Calculator Suite</span>
+                  <span className="phone-widget-tag">Quick Kalzy </span>
                   <div className="phone-widget-val-row">
                     <span className="phone-widget-big">₹59,000.00</span>
                     <span className="phone-widget-badge">18% GST</span>

@@ -1,5 +1,5 @@
 /**
- * Core calculation logic matching the backend and frontend standards of Calculator Suite.
+ * Core calculation logic matching the backend and frontend standards of Kalzy.
  */
 
 export const calculateBMILogic = (weightKg, heightCm) => {

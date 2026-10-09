@@ -14,7 +14,7 @@ function HeroSection({ onExploreCalculators, onOpenDashboard }) {
         {/* Main Hero Headline */}
         <h1 className="trovix-main-headline">
           Unlock calculation<br />
-          clarity with Calculator Suite
+          clarity with Kalzy
         </h1>
 
         {/* Subtitle Copy */}

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
 import CalculatorGrid from './CalculatorGrid';
-import InteractiveCalculatorPreview from './InteractiveCalculatorPreview';
 import FeaturesSection from './FeaturesSection';
 import HowItWorksSection from './HowItWorksSection';
 import CTASection from './CTASection';
@@ -11,20 +10,13 @@ import Footer from './Footer';
 import './LandingPage.css';
 
 function LandingPage({ token }) {
-  const [activeInteractiveTab, setActiveInteractiveTab] = useState('bmi');
   const navigate = useNavigate();
 
   const handleSelectCalculatorFromGrid = (calcId) => {
-    setActiveInteractiveTab(calcId);
-    const element = document.getElementById('interactive-preview');
-    if (element) {
-      const navOffset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    if (token) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
     }
   };
 
@@ -36,7 +28,7 @@ function LandingPage({ token }) {
       const offsetPosition = elementPosition + window.pageYOffset - navOffset;
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   };
@@ -63,13 +55,6 @@ function LandingPage({ token }) {
       {/* 4 Calculator Cards Collection */}
       <CalculatorGrid
         onSelectCalculator={handleSelectCalculatorFromGrid}
-      />
-
-      {/* Embedded Live Interactive Calculator Preview Workspace */}
-      <InteractiveCalculatorPreview
-        activeTab={activeInteractiveTab}
-        onSelectTab={setActiveInteractiveTab}
-        onOpenFullSuite={handleOpenDashboard}
       />
 
       {/* Core Fintech Features Section */}

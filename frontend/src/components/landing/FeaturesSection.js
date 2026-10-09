@@ -21,7 +21,7 @@ function FeaturesSection() {
     {
       icon: Smartphone,
       title: 'Ready Anywhere',
-      description: 'Access the suite effortlessly from desktop, tablet, or mobile with responsive layouts and touch-friendly controls.',
+      description: 'Access Kalzy effortlessly from desktop, tablet, or mobile with responsive layouts and touch-friendly controls.',
     },
   ];
 

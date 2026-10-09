@@ -22,7 +22,7 @@ function Footer({ token }) {
               <div className="logo-icon-box small">
                 <Calculator className="brand-icon" size={18} />
               </div>
-              <span className="brand-title">Calculator<span className="brand-accent">Suite</span></span>
+              <span className="brand-accent">Kalzy</span>
             </div>
             <p className="footer-brand-desc">
               A modern fintech calculation platform engineered for speed, mathematical rigor, and effortless everyday clarity.
@@ -132,7 +132,7 @@ function Footer({ token }) {
         {/* Footer Bottom Bar */}
         <div className="footer-bottom-bar">
           <p className="copyright-text">
-            © {currentYear} Calculator Suite. All rights reserved. Crafted with precision and clarity.
+            © {currentYear} Kalzy . All rights reserved. Crafted with precision and clarity.
           </p>
           <div className="footer-badges">
             <span className="badge-build">FastAPI + React 18</span>

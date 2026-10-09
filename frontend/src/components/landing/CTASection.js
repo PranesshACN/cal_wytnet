@@ -29,7 +29,7 @@ function CTASection({ onExplore, onGoToDashboard }) {
               className="btn-cta-primary"
               onClick={onExplore}
             >
-              <span>Explore Calculator Suite</span>
+              <span>Explore Kalzy</span>
               <ArrowRight size={18} />
             </button>
 
