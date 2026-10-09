@@ -98,6 +98,8 @@ import {
   Droplet,
   Moon,
   HeartPulse,
+  Search,
+  X,
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -106,6 +108,7 @@ function Dashboard({ token, onLogout }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tool') || 'emi');
   const [syncedStatus, setSyncedStatus] = useState(null);
+  const [toolSearch, setToolSearch] = useState('');
 
   // Sync activeTab with URL tool parameter
   useEffect(() => {
@@ -754,6 +757,30 @@ function Dashboard({ token, onLogout }) {
   const allTabs = [...financeTabs, ...investmentTabs, ...taxSalaryTabs, ...healthTabs, ...utilityTabs];
   const activeTabMeta = allTabs.find((t) => t.id === activeTab) || financeTabs[0];
 
+  const filterTabs = (tabs) => {
+    if (!toolSearch.trim()) return tabs;
+    const q = toolSearch.toLowerCase().trim();
+    return tabs.filter(
+      (tab) =>
+        tab.label.toLowerCase().includes(q) ||
+        tab.tag.toLowerCase().includes(q) ||
+        tab.id.toLowerCase().includes(q)
+    );
+  };
+
+  const filteredFinanceTabs = filterTabs(financeTabs);
+  const filteredInvestmentTabs = filterTabs(investmentTabs);
+  const filteredTaxSalaryTabs = filterTabs(taxSalaryTabs);
+  const filteredHealthTabs = filterTabs(healthTabs);
+  const filteredUtilityTabs = filterTabs(utilityTabs);
+
+  const totalFilteredCount =
+    filteredFinanceTabs.length +
+    filteredInvestmentTabs.length +
+    filteredTaxSalaryTabs.length +
+    filteredHealthTabs.length +
+    filteredUtilityTabs.length;
+
   return (
     <div className="dashboard-root">
       {/* Top Navbar */}
@@ -806,155 +833,226 @@ function Dashboard({ token, onLogout }) {
       <section className="workspace-wrapper-card" aria-label="Calculator Workspace">
         {/* Left Sidebar */}
         <aside className="workspace-sidebar">
-          <div className="sidebar-header-label">CHOOSE TOOL</div>
+          {/* Top fixed header & search */}
+          <div className="sidebar-top-section">
+            <div className="sidebar-header-row">
+              <span className="sidebar-header-label">CHOOSE TOOL</span>
+              <span className="sidebar-tool-count-pill">
+                {totalFilteredCount} {totalFilteredCount === 1 ? 'tool' : 'tools'}
+              </span>
+            </div>
 
-          {/* Group 1: Finance & Loan (10) */}
-          <div className="sidebar-category-header">FINANCE & LOAN (10)</div>
-          <div className="sidebar-tools-list">
-            {financeTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
+            <div className="sidebar-search-box">
+              <Search size={15} className="sidebar-search-icon" />
+              <input
+                type="text"
+                value={toolSearch}
+                onChange={(e) => setToolSearch(e.target.value)}
+                placeholder="Search calculators..."
+                className="sidebar-search-input"
+              />
+              {toolSearch && (
                 <button
-                  key={tab.id}
                   type="button"
-                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
+                  onClick={() => setToolSearch('')}
+                  className="sidebar-search-clear-btn"
+                  title="Clear search"
+                  aria-label="Clear search"
                 >
-                  <div className="tool-icon-wrapper">
-                    <Icon size={18} />
-                  </div>
-                  <div className="tool-meta-wrapper">
-                    <span className="tool-title-text">{tab.label}</span>
-                    <span className="tool-tag-text">{tab.tag}</span>
-                  </div>
-                  {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
-                  {isActive && <div className="tool-active-dot" />}
+                  <X size={13} />
                 </button>
-              );
-            })}
+              )}
+            </div>
           </div>
 
-          {/* Group 2: Investment (5) */}
-          <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
-            INVESTMENT (5)
-          </div>
-          <div className="sidebar-tools-list">
-            {investmentTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
+          {/* Scrollable tools container */}
+          <div className="workspace-sidebar-scroll">
+            {totalFilteredCount === 0 ? (
+              <div className="sidebar-empty-search">
+                <Search size={22} className="empty-search-icon" />
+                <span className="empty-search-text">No tools matching "{toolSearch}"</span>
                 <button
-                  key={tab.id}
                   type="button"
-                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
+                  onClick={() => setToolSearch('')}
+                  className="empty-search-clear-link"
                 >
-                  <div className="tool-icon-wrapper">
-                    <Icon size={18} />
-                  </div>
-                  <div className="tool-meta-wrapper">
-                    <span className="tool-title-text">{tab.label}</span>
-                    <span className="tool-tag-text">{tab.tag}</span>
-                  </div>
-                  {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
-                  {isActive && <div className="tool-active-dot" />}
+                  Clear search
                 </button>
-              );
-            })}
-          </div>
+              </div>
+            ) : (
+              <>
+                {/* Group 1: Finance & Loan */}
+                {filteredFinanceTabs.length > 0 && (
+                  <>
+                    <div className="sidebar-category-header">
+                      FINANCE & LOAN ({filteredFinanceTabs.length})
+                    </div>
+                    <div className="sidebar-tools-list">
+                      {filteredFinanceTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                            onClick={() => handleSelectTab(tab.id)}
+                          >
+                            <div className="tool-icon-wrapper">
+                              <Icon size={18} />
+                            </div>
+                            <div className="tool-meta-wrapper">
+                              <span className="tool-title-text">{tab.label}</span>
+                              <span className="tool-tag-text">{tab.tag}</span>
+                            </div>
+                            {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
+                            {isActive && <div className="tool-active-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-          {/* Group 3: Tax & Salary (5) */}
-          <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
-            TAX & SALARY (5)
-          </div>
-          <div className="sidebar-tools-list">
-            {taxSalaryTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
-                >
-                  <div className="tool-icon-wrapper">
-                    <Icon size={18} />
-                  </div>
-                  <div className="tool-meta-wrapper">
-                    <span className="tool-title-text">{tab.label}</span>
-                    <span className="tool-tag-text">{tab.tag}</span>
-                  </div>
-                  {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
-                  {isActive && <div className="tool-active-dot" />}
-                </button>
-              );
-            })}
-          </div>
+                {/* Group 2: Investment */}
+                {filteredInvestmentTabs.length > 0 && (
+                  <>
+                    <div className="sidebar-category-header" style={{ marginTop: '16px' }}>
+                      INVESTMENT ({filteredInvestmentTabs.length})
+                    </div>
+                    <div className="sidebar-tools-list">
+                      {filteredInvestmentTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                            onClick={() => handleSelectTab(tab.id)}
+                          >
+                            <div className="tool-icon-wrapper">
+                              <Icon size={18} />
+                            </div>
+                            <div className="tool-meta-wrapper">
+                              <span className="tool-title-text">{tab.label}</span>
+                              <span className="tool-tag-text">{tab.tag}</span>
+                            </div>
+                            {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
+                            {isActive && <div className="tool-active-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-          {/* Group 4: Health & Fitness (8) */}
-          <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
-            HEALTH & FITNESS (8)
-          </div>
-          <div className="sidebar-tools-list">
-            {healthTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
-                >
-                  <div className="tool-icon-wrapper">
-                    <Icon size={18} />
-                  </div>
-                  <div className="tool-meta-wrapper">
-                    <span className="tool-title-text">{tab.label}</span>
-                    <span className="tool-tag-text">{tab.tag}</span>
-                  </div>
-                  {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
-                  {isActive && <div className="tool-active-dot" />}
-                </button>
-              );
-            })}
-          </div>
+                {/* Group 3: Tax & Salary */}
+                {filteredTaxSalaryTabs.length > 0 && (
+                  <>
+                    <div className="sidebar-category-header" style={{ marginTop: '16px' }}>
+                      TAX & SALARY ({filteredTaxSalaryTabs.length})
+                    </div>
+                    <div className="sidebar-tools-list">
+                      {filteredTaxSalaryTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                            onClick={() => handleSelectTab(tab.id)}
+                          >
+                            <div className="tool-icon-wrapper">
+                              <Icon size={18} />
+                            </div>
+                            <div className="tool-meta-wrapper">
+                              <span className="tool-title-text">{tab.label}</span>
+                              <span className="tool-tag-text">{tab.tag}</span>
+                            </div>
+                            {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
+                            {isActive && <div className="tool-active-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-          {/* Group 5: Utilities (2) */}
-          <div className="sidebar-category-header" style={{ marginTop: '18px' }}>
-            DAILY UTILITIES (2)
-          </div>
-          <div className="sidebar-tools-list">
-            {utilityTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`tool-tab-button ${isActive ? 'active' : ''}`}
-                  onClick={() => handleSelectTab(tab.id)}
-                >
-                  <div className="tool-icon-wrapper">
-                    <Icon size={18} />
-                  </div>
-                  <div className="tool-meta-wrapper">
-                    <span className="tool-title-text">{tab.label}</span>
-                    <span className="tool-tag-text">{tab.tag}</span>
-                  </div>
-                  {isActive && <div className="tool-active-dot" />}
-                </button>
-              );
-            })}
-          </div>
+                {/* Group 4: Health & Fitness */}
+                {filteredHealthTabs.length > 0 && (
+                  <>
+                    <div className="sidebar-category-header" style={{ marginTop: '16px' }}>
+                      HEALTH & FITNESS ({filteredHealthTabs.length})
+                    </div>
+                    <div className="sidebar-tools-list">
+                      {filteredHealthTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                            onClick={() => handleSelectTab(tab.id)}
+                          >
+                            <div className="tool-icon-wrapper">
+                              <Icon size={18} />
+                            </div>
+                            <div className="tool-meta-wrapper">
+                              <span className="tool-title-text">{tab.label}</span>
+                              <span className="tool-tag-text">{tab.tag}</span>
+                            </div>
+                            {tab.isPopular && <span className="sidebar-popular-tag">Popular</span>}
+                            {isActive && <div className="tool-active-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-          <div className="sidebar-latency-card" style={{ marginTop: '20px' }}>
-            <Sparkles size={16} className="latency-icon" />
-            <p className="latency-card-text">
-              Real-time calculation with sub-millisecond precision.
-            </p>
+                {/* Group 5: Utilities */}
+                {filteredUtilityTabs.length > 0 && (
+                  <>
+                    <div className="sidebar-category-header" style={{ marginTop: '16px' }}>
+                      DAILY UTILITIES ({filteredUtilityTabs.length})
+                    </div>
+                    <div className="sidebar-tools-list">
+                      {filteredUtilityTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            className={`tool-tab-button ${isActive ? 'active' : ''}`}
+                            onClick={() => handleSelectTab(tab.id)}
+                          >
+                            <div className="tool-icon-wrapper">
+                              <Icon size={18} />
+                            </div>
+                            <div className="tool-meta-wrapper">
+                              <span className="tool-title-text">{tab.label}</span>
+                              <span className="tool-tag-text">{tab.tag}</span>
+                            </div>
+                            {isActive && <div className="tool-active-dot" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                <div className="sidebar-latency-card" style={{ marginTop: '20px', marginBottom: '8px' }}>
+                  <Sparkles size={16} className="latency-icon" />
+                  <p className="latency-card-text">
+                    Real-time calculation with sub-millisecond precision.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </aside>
 
