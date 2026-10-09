@@ -23,7 +23,7 @@ def test_auth_config():
     assert response.status_code == 200
     data = response.json()
     assert data["client_id"] == "wn_live_33b5d58dcf12f3e395272e8a07c97b8e"
-    assert data["redirect_uri"] == "http://localhost:3000/api/auth/callback/whitenet"
+    assert data["redirect_uri"] == "https://kalzy.vercel.app/api/auth/callback/whitenet"
     assert "openid" in data["scopes"]
 
 def test_direct_login_flow_a():
@@ -68,7 +68,7 @@ def test_sso_code_exchange_flow_b():
     response = client.post("/api/auth/wytpass/token", json={
         "code": "test_auth_code_xyz",
         "code_verifier": "test_verifier_abcdef12345678901234567890",
-        "redirect_uri": "http://localhost:3000/api/auth/callback/whitenet"
+        "redirect_uri": "https://kalzy.vercel.app/api/auth/callback/whitenet"
     })
     assert response.status_code == 200
     data = response.json()

@@ -39,7 +39,7 @@ if DATABASE_URL == "sqlite:///./calculator.db":
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kalzy.vercel.app")
 IS_PROD = ENVIRONMENT.lower() == "production"
 
 engine = create_engine(
@@ -151,7 +151,7 @@ app = FastAPI(
 # CORS Configuration
 allowed_origins = [
     FRONTEND_URL,
-    "http://localhost:3000",
+    "https://kalzy.vercel.app",
     "http://127.0.0.1:3000",
     "https://wytnet.com"
 ]
